@@ -5,6 +5,7 @@ such as in v1.py, will inherit from this.
 """
 import json
 import os
+from copy import deepcopy
 
 import numpy as np
 import time
@@ -127,6 +128,7 @@ class Pomme(gym.Env):
     def make_board(self):
         self._board = utility.make_board(self._board_size, self._num_rigid,
                                          self._num_wood, len(self._agents))
+        self._prev_board = deepcopy(self._board)
 
     def make_items(self):
         self._items = utility.make_items(self._board, self._num_items)
@@ -151,7 +153,7 @@ class Pomme(gym.Env):
 
     def _get_rewards(self):
         return self.model.get_shaped_rewards(self._agents, self._game_type,
-                                             self._step_count, self._max_steps, self._board)
+                                             self._step_count, self._max_steps, self._prev_board, self._board, self._flames)
 
     def _get_done(self):
         return self.model.get_done(self._agents, self._step_count,
@@ -188,6 +190,8 @@ class Pomme(gym.Env):
 
     def step(self, actions):
         self._intended_actions = actions
+        # keep the previous board
+        self._prev_board = deepcopy(self._board)
 
         max_blast_strength = self._agent_view_size or 10
         result = self.model.step(
