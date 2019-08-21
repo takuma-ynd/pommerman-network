@@ -12,6 +12,7 @@ class Bomber(object):
     def __init__(self, agent_id=None, game_type=None):
         self._game_type = game_type
         self.ammo = 1
+        self.ammo_capacity = 1
         self.is_alive = True
         self.blast_strength = constants.DEFAULT_BLAST_STRENGTH
         self.can_kick = False
@@ -77,6 +78,7 @@ class Bomber(object):
     def reset(self, ammo=1, is_alive=True, blast_strength=None, can_kick=False):
         self.position = self.start_position
         self.ammo = ammo
+        self.ammo_capacity = ammo  # this could be wrong in the case that agents already use some bombs from the initial step
         self.is_alive = is_alive
         self.blast_strength = blast_strength or constants.DEFAULT_BLAST_STRENGTH
         self.can_kick = can_kick

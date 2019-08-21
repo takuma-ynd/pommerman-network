@@ -63,7 +63,8 @@ class ForwardModel(object):
                 actions, board, agents, bombs, items, flames)
             next_obs = self.get_observations(
                 board, agents, bombs, is_partially_observable, agent_view_size)
-            reward = self.get_rewards(agents, game_type, step_count, max_steps)
+            # reward = self.get_rewards(agents, game_type, step_count, max_steps)
+            reward = self.get_shaped_rewards(agents, game_type, step_count, max_steps, board)
             done = self.get_done(agents, game_type, step_count, max_steps,
                                  training_agent)
             info = self.get_info(done, rewards, game_type, agents)
@@ -644,7 +645,15 @@ class ForwardModel(object):
                 return [-1] * 4
             else:
                 # Game running: 0 for alive, -1 for dead.
-                return [int(agent.is_alive) - 1 for agent in agents]
+
+                rewards = [int(agent.is_alive) - 1 for agent in agents]
+                # assuming agents[-1] is the training agent
+                # reward if the agent uses more than half of its bombs
+                if agents[-1].ammo / agents[-1].ammo_capacity < 0.5:
+                    rewards[-1] += 0.2
+
+                return rewards
+                # return [int(agent.is_alive) - 1 for agent in agents]
         elif game_type == constants.GameType.OneVsOne:
             if len(alive_agents) == 1:
                 # An agent won. Give them +1, the other -1.
@@ -654,8 +663,99 @@ class ForwardModel(object):
                 return [-1] * 2
             else:
                 # Game running
+
+                # assuming agents[-1] is the training agent
+                # reward if the agent uses more than half of its bombs
+                if agents[-1].ammo / agents[-1].ammo_capacity < 0.5:
+                    return [0, 0.2]
+                
                 return [0, 0]
         else:
+            # We are playing a team game.
+            if any_lst_equal(alive_agents, [[0, 2], [0], [2]]):
+                # Team [0, 2] wins.
+                return [1, -1, 1, -1]
+            elif any_lst_equal(alive_agents, [[1, 3], [1], [3]]):
+                # Team [1, 3] wins.
+                return [-1, 1, -1, 1]
+            elif step_count >= max_steps:
+                # Game is over by max_steps. All agents tie.
+                return [-1] * 4
+            elif len(alive_agents) == 0:
+                # Everyone's dead. All agents tie.
+                return [-1] * 4
+            else:
+                # No team has yet won or lost.
+                return [0] * 4
+
+
+    @staticmethod
+    def get_shaped_rewards(agents, game_type, step_count, max_steps, board, config={"ammo_bonus":True, "flames_bonus":True}):
+        def prop_flames(board):
+            flames = 0
+            rigids = 0
+            for item in np.nditer(board):
+                if item == constants.Item.Flames.value:
+                    flames += 1
+                if item == constants.Item.Rigid.value:
+                    rigids += 1
+            return flames / (board.size - rigids)
+
+        def any_lst_equal(lst, values):
+            '''Checks if list are equal'''
+            return any([lst == v for v in values])
+
+        alive_agents = [num for num, agent in enumerate(agents) \
+                        if agent.is_alive]
+        if game_type == constants.GameType.FFA:
+            if len(alive_agents) == 1:
+                # An agent won. Give them +1, others -1.
+                rewards = [2 * int(agent.is_alive) - 1 for agent in agents]
+                return rewards
+            elif step_count >= max_steps:
+                # Game is over from time. Everyone gets -1.
+                return [-1] * 4
+            else:
+                # Game running: 0 for alive, -1 for dead.
+
+                rewards = [int(agent.is_alive) - 1 for agent in agents]
+                # assuming agents[-1] is the training agent
+                # reward if the agent uses more than half of its bombs
+                if config.get("ammo_bonus", False):
+                    if agents[-1].ammo / agents[-1].ammo_capacity <= 0.5:
+                        rewards[-1] += 0.01
+
+                # add bonus reward according to the occupancy of flames
+                if config.get("flames_bonus", False):
+                    bonus = 0.2 * (np.exp(prop_flames(board)) - 1)
+                    rewards[-1] += bonus
+
+                return rewards
+                # return [int(agent.is_alive) - 1 for agent in agents]
+        elif game_type == constants.GameType.OneVsOne:
+            raise Exception("reward shaping is only applied to FFA")
+            if len(alive_agents) == 1:
+                # An agent won. Give them +1, the other -1.
+                return [2 * int(agent.is_alive) - 1 for agent in agents]
+            elif step_count >= max_steps:
+                # Game is over from time. Everyone gets -1.
+                return [-1] * 2
+            else:
+                # Game running
+
+                # assuming agents[-1] is the training agent
+                # reward if the agent uses more than half of its bombs
+                if agents[-1].ammo / agents[-1].ammo_capacity < 0.5:
+                    return [0, 0.2]
+
+                # add bonus reward according to the occupancy of flames
+                bonus += np.exp(prop_flames(board)) - 1
+                print("bonus reward:{}\t original reward:{}".format(bonus, rewards[-1]))
+                rewards[-1] += bonus
+                
+                return [0, 0]
+        else:
+            raise Exception("reward shaping is only applied to FFA")
             # We are playing a team game.
             if any_lst_equal(alive_agents, [[0, 2], [0], [2]]):
                 # Team [0, 2] wins.

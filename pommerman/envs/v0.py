@@ -145,9 +145,13 @@ class Pomme(gym.Env):
             obs['step_count'] = self._step_count
         return self.observations
 
+    # def _get_rewards(self):
+    #     return self.model.get_rewards(self._agents, self._game_type,
+    #                                   self._step_count, self._max_steps)
+
     def _get_rewards(self):
-        return self.model.get_rewards(self._agents, self._game_type,
-                                      self._step_count, self._max_steps)
+        return self.model.get_shaped_rewards(self._agents, self._game_type,
+                                             self._step_count, self._max_steps, self._board)
 
     def _get_done(self):
         return self.model.get_done(self._agents, self._step_count,
@@ -323,22 +327,34 @@ class Pomme(gym.Env):
     def set_json_info(self):
         """Sets the game state as the init_game_state."""
         board_size = int(self._init_game_state['board_size'])
+        agent_array = json.loads(self._init_game_state['agents'])
+        ext = self._init_game_state.get('extension') or {}
         self._board_size = board_size
         self._step_count = int(self._init_game_state['step_count'])
 
-        board_array = json.loads(self._init_game_state['board'])
-        self._board = np.ones((board_size, board_size)).astype(np.uint8)
-        self._board *= constants.Item.Passage.value
-        for x in range(self._board_size):
-            for y in range(self._board_size):
-                self._board[x, y] = board_array[x][y]
+        # use utility.make_board if ext['make_board] is True
+        if ext.get('make_board'):
+            assert "num_rigid" in ext
+            assert "num_wood" in ext
+            self._board = utility.make_board(board_size, num_rigid=ext["num_rigid"], num_wood=ext["num_wood"], num_agents=len(agent_array))
+        else:
+            board_array = json.loads(self._init_game_state['board'])
+            self._board = np.ones((board_size, board_size)).astype(np.uint8)
+            self._board *= constants.Item.Passage.value
+            for x in range(self._board_size):
+                for y in range(self._board_size):
+                    self._board[x, y] = board_array[x][y]
 
-        self._items = {}
-        item_array = json.loads(self._init_game_state['items'])
-        for i in item_array:
-            self._items[tuple(i[0])] = i[1]
+        # use utility.make_items if ext['make_items'] is True
+        if ext.get('make_items'):
+            self._items = utility.make_items(self._board, num_items=ext.get('num_items'))
+        else:
+            self._items = {}
+            item_array = json.loads(self._init_game_state['items'])
+            for i in item_array:
+                self._items[tuple(i[0])] = i[1]
 
-        agent_array = json.loads(self._init_game_state['agents'])
+        # agent_array = json.loads(self._init_game_state['agents'])  # moved to the top
         for a in agent_array:
             agent = next(x for x in self._agents \
                          if x.agent_id == a['agent_id'])
