@@ -153,7 +153,7 @@ class Pomme(gym.Env):
 
     def _get_rewards(self):
         return self.model.get_shaped_rewards(self._agents, self._game_type,
-                                             self._step_count, self._max_steps, self._prev_board, self._board, self._flames)
+                                             self._step_count, self._max_steps, self._prev_board, self._board, self._flames, self._num_wood)
 
     def _get_done(self):
         return self.model.get_done(self._agents, self._step_count,
@@ -341,6 +341,8 @@ class Pomme(gym.Env):
             assert "num_rigid" in ext
             assert "num_wood" in ext
             self._board = utility.make_board(board_size, num_rigid=ext["num_rigid"], num_wood=ext["num_wood"], num_agents=len(agent_array))
+            self._num_rigid = ext['num_rigid']
+            self._num_wood= ext['num_wood']
         else:
             board_array = json.loads(self._init_game_state['board'])
             self._board = np.ones((board_size, board_size)).astype(np.uint8)

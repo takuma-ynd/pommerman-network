@@ -690,7 +690,7 @@ class ForwardModel(object):
 
 
     @staticmethod
-    def get_shaped_rewards(agents, game_type, step_count, max_steps, prev_board, board, flames, config={"ammo_bonus":False, "flames_bonus":False, "winning_bonus":False, "timeover":False, "destroy_bonus":True}):
+    def get_shaped_rewards(agents, game_type, step_count, max_steps, prev_board, board, flames, num_wood, config={"ammo_bonus":False, "ammo_penalty": True, "flames_bonus":False, "winning_bonus":False, "timeover":False, "destroy_bonus":False, 'timebonus':False}):
         def prop_flames(board):
             flames = 0
             rigids = 0
@@ -705,13 +705,21 @@ class ForwardModel(object):
             '''Checks if list are equal'''
             return any([lst == v for v in values])
 
-        def woods_destroyed(flames, prev_board):
+        def woods_destroyed_at_a_frame(flames, prev_board):
             count = 0
             for flame in flames:
                 x, y = flame.position
                 if prev_board[x, y] == constants.Item.Wood.value:
                     count += 1
             return count
+
+        def total_woods_destroyed(board, num_wood):
+            count = 0
+            for element in board.ravel():
+                if element == constants.Item.Wood.value:
+                    count += 1
+            return num_wood - count
+
 
         alive_agents = [num for num, agent in enumerate(agents) \
                         if agent.is_alive]
@@ -721,28 +729,53 @@ class ForwardModel(object):
                 if config.get("winning_bonus", True):
                     rewards = [2 * int(agent.is_alive) - 1 for agent in agents]
                 else:
-                    if agents[-1].is_alive:
-                        rewards = [0 for _ in agents]
-                    else:
+                    rewards = [0 for _ in agents]
+
+                    # delayed reward according to the number of walls broken
+                    # rewards[-1] += 0.1 * total_woods_destroyed(board, num_wood)
+
+                    # time bonus (only for constantly bombining setting)
+                    if config.get('timebonus', False):
+                        rewards[-1] = 0.1 * step_count
+
+                    if not agents[-1].is_alive:
                         # if the agent dies, put -1 reward (temporary suspended)
-                        rewards = [0 for _ in agents]
+                        rewards[-1] -= 0.2
+
+
                 return rewards
             elif step_count >= max_steps:
                 # Game is over from time. Everyone gets -1.
                 if config.get("timeover", True):
                     return [-1] * 4
                 else:
-                    return [0] * 4
+
+                    # delayed reward according to the number of walls broken
+                    rewards = [0 for _ in agents]
+                    rewards[-1] = 0.05 * total_woods_destroyed(board, num_wood)
+
+                    # time bonus (only for constantly bombining setting)
+                    if config.get('timebonus', False):
+                        rewards[-1] = 0.1 * step_count
+                    return rewards
+
             else:
                 # Game running: 0 for alive, -1 for dead.
 
                 # NOTE: with this setting, agent get -1 reward when it bombs itself and the opponent at a time
                 rewards = [int(agent.is_alive) - 1 for agent in agents]
                 # assuming agents[-1] is the training agent
+
                 # reward if the agent uses more than half of its bombs
                 if config.get("ammo_bonus", False):
                     if agents[-1].ammo / agents[-1].ammo_capacity <= 0.5:
                         rewards[-1] += 0.01
+
+                if config.get("ammo_penalty", False):
+                    # rewards[-1] = -0.01 * (agents[-1].ammo / agents[-1].ammo_capacity)
+                    rewards[-1] -= 0.1 * (agents[-1].ammo / agents[-1].ammo_capacity)
+                    # if agents[-1].ammo / agents[-1].ammo_capacity == 1:
+                    #     rewards[-1] -= 0.01
 
                 # add bonus reward according to the occupancy of flames
                 if config.get("flames_bonus", False):
@@ -751,12 +784,14 @@ class ForwardModel(object):
 
                 # if some walls are destroyed, reward according to the number
                 if config.get("destroy_bonus", False):
-                    destroyed_woods = woods_destroyed(flames, prev_board)
+                    destroyed_woods = woods_destroyed_at_a_frame(flames, prev_board)
                     rewards[-1] += 0.01 * (np.exp(destroyed_woods) - 1)
                     # rewards[-1] += 0.01 * destroyed_woods
 
                 return rewards
                 # return [int(agent.is_alive) - 1 for agent in agents]
+
+
         elif game_type == constants.GameType.OneVsOne:
             raise Exception("reward shaping is only applied to FFA")
             if len(alive_agents) == 1:
