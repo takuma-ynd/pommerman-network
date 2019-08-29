@@ -27,10 +27,10 @@ class PlayerAgentBlocking(BaseAgent):
     def act(self, obs, action_space):
         key = click.getchar()
         if self.agent_control == 'arrows':
-            if key == K_RT + K_PREFIX: return constants.Action.Right.value
-            if key == K_LF + K_PREFIX: return constants.Action.Left.value
-            if key == K_UP + K_PREFIX: return constants.Action.Up.value
-            if key == K_DN + K_PREFIX: return constants.Action.Down.value
+            if key == K_PREFIX + K_RT  : return constants.Action.Right.value
+            if key ==  K_PREFIX + K_LF : return constants.Action.Left.value
+            if key ==  K_PREFIX + K_UP : return constants.Action.Up.value
+            if key ==  K_PREFIX + K_DN : return constants.Action.Down.value
             if key == ' ': return constants.Action.Bomb.value
             return constants.Action.Stop.value
 
