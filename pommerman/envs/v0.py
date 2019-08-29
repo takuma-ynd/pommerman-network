@@ -336,6 +336,9 @@ class Pomme(gym.Env):
         self._board_size = board_size
         self._step_count = int(self._init_game_state['step_count'])
 
+        if ext.get('max_steps'):
+            self._max_steps = ext['max_steps']
+
         # use utility.make_board if ext['make_board] is True
         if ext.get('make_board'):
             assert "num_rigid" in ext
