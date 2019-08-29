@@ -225,7 +225,8 @@ class PommeViewer(Viewer):
                  partially_observable=False,
                  agent_view_size=None,
                  game_type=None,
-                 two_windows=False
+                 two_windows=True,
+                 window2agent=[0,3]
                  ):
         super().__init__()
         from gym.envs.classic_control import rendering
@@ -233,12 +234,12 @@ class PommeViewer(Viewer):
         board_height = constants.TILE_SIZE * board_size
         height = math.ceil(board_height + (constants.BORDER_SIZE * 2) +
                            (constants.MARGIN_SIZE * 3))
-        width = math.ceil(board_height + board_height / 4 +
-                          (constants.BORDER_SIZE * 2) + constants.MARGIN_SIZE)
+        width = board_height + (constants.BORDER_SIZE * 2)
 
         self._height = height
         self._width = width
         self.two_windows = two_windows
+        self.window2agent = window2agent
         if self.two_windows:
             window0 = pyglet.window.Window(
                 width=width, height=height, display=display)
@@ -300,14 +301,17 @@ class PommeViewer(Viewer):
             background = self.render_background()
             text = self.render_text()
             agents = self.render_dead_alive()
-            board = self.render_main_board()
-            agents_board = self.render_agents_board()
+            board = self.render_main_board(agent_id=self.window2agent[i])
+            # agents_board = self.render_agents_board()
 
             self._batch.draw()
             window.flip()
 
-    def render_main_board(self):
-        board = self._board_state
+    def render_main_board(self, agent_id=None):
+        if agent_id is None:
+            board = self._board_state
+        else:
+            board = self.agent_view(self._agents[agent_id])
         size = self._tile_size
         x_offset = constants.BORDER_SIZE
         y_offset = constants.BORDER_SIZE
