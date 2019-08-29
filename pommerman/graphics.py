@@ -51,6 +51,7 @@ class Viewer(object):
         self._board_state = None
         self._batch = None
         self.window = None
+        self.windows = []
         self._step = 0
         self._agent_view_size = None
         self._is_partially_observable = False
@@ -73,7 +74,8 @@ class Viewer(object):
         self._step = step
 
     def close(self):
-        self.window.close()
+        for window in self.windows:
+            window.close()
         self.isopen = False
 
     def window_closed_by_user(self):
@@ -141,6 +143,13 @@ class PixelViewer(Viewer):
             'RGB',
             frames.tobytes(),
             pitch=frames.shape[1] * -3)
+        # import ipdb; ipdb.set_trace()
+        # for window in self.windows:
+        #     window.clear()
+        #     window.switch_to()
+        #     window.dispatch_events()
+        #     image.blit(0, 0, width=window.width, height=window.height)
+        #     window.flip()
         self.window.clear()
         self.window.switch_to()
         self.window.dispatch_events()
@@ -215,7 +224,9 @@ class PommeViewer(Viewer):
                  agents=[],
                  partially_observable=False,
                  agent_view_size=None,
-                 game_type=None):
+                 game_type=None,
+                 two_windows=False
+                 ):
         super().__init__()
         from gym.envs.classic_control import rendering
         self.display = rendering.get_display(display)
@@ -227,9 +238,22 @@ class PommeViewer(Viewer):
 
         self._height = height
         self._width = width
-        self.window = pyglet.window.Window(
-            width=width, height=height, display=display)
-        self.window.set_caption('Pommerman')
+        self.two_windows = two_windows
+        if self.two_windows:
+            window0 = pyglet.window.Window(
+                width=width, height=height, display=display)
+            window1 = pyglet.window.Window(
+                width=width, height=height, display=display)
+
+            self.windows = [window0, window1]
+        else:
+            window0 = pyglet.window.Window(
+                width=width, height=height, display=display)
+            self.windows = [window0]
+
+        for i, window in enumerate(self.windows):
+            window.set_caption('Window {}'.format(i))
+
         self.isopen = True
         self._board_size = board_size
         self._resource_manager = ResourceManager(game_type)
@@ -241,25 +265,46 @@ class PommeViewer(Viewer):
         self._is_partially_observable = partially_observable
         self._agent_view_size = agent_view_size
 
-        @self.window.event
-        def close(self):
-            '''Pyglet event handler to close the window'''
-            self.window.close()
-            self.isopen = False
+
+        # there might be a better way to write this, but idk...
+        if self.two_windows:
+            # super dirty trick! (can't use self.window[0] in decorator expression)
+            self.window0 = self.windows[0]
+            self.window1 = self.windows[1]
+            @self.window0.event
+            def close(self):
+                '''Pyglet event handler to close the window'''
+                self.window[0].close()
+                self.isopen = False
+
+            @self.window1.event
+            def close(self):
+                '''Pyglet event handler to close the window'''
+                self.window[1].close()
+                self.isopen = False
+        else:
+            self.window0 = self.windows[0]
+            @self.window0.event
+            def close(self):
+                '''Pyglet event handler to close the window'''
+                self.window[0].close()
+                self.isopen = False
+
 
     def render(self):
-        self.window.switch_to()
-        self.window.dispatch_events()
-        self._batch = pyglet.graphics.Batch()
+        for i, window in enumerate(self.windows):
+            window.switch_to()
+            window.dispatch_events()
+            self._batch = pyglet.graphics.Batch()
 
-        background = self.render_background()
-        text = self.render_text()
-        agents = self.render_dead_alive()
-        board = self.render_main_board()
-        agents_board = self.render_agents_board()
+            background = self.render_background()
+            text = self.render_text()
+            agents = self.render_dead_alive()
+            board = self.render_main_board()
+            agents_board = self.render_agents_board()
 
-        self._batch.draw()
-        self.window.flip()
+            self._batch.draw()
+            window.flip()
 
     def render_main_board(self):
         board = self._board_state
