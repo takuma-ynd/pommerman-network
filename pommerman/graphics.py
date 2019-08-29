@@ -234,7 +234,10 @@ class PommeViewer(Viewer):
         board_height = constants.TILE_SIZE * board_size
         height = math.ceil(board_height + (constants.BORDER_SIZE * 2) +
                            (constants.MARGIN_SIZE * 3))
-        width = board_height + (constants.BORDER_SIZE * 2)
+        ability_width = constants.TILE_SIZE * 2
+        width = math.ceil(board_height + ability_width +
+                          (constants.BORDER_SIZE * 2) + constants.MARGIN_SIZE)
+        # board_height + (constants.BORDER_SIZE * 2)
 
         self._height = height
         self._width = width
@@ -260,6 +263,7 @@ class PommeViewer(Viewer):
         self._resource_manager = ResourceManager(game_type)
         self._tile_size = constants.TILE_SIZE
         self._agent_tile_size = (board_height / 4) / board_size
+        self._agent_abilities_size = constants.TILE_SIZE * 2
         self._agent_count = len(agents)
         self._agents = agents
         self._game_type = game_type
@@ -302,6 +306,7 @@ class PommeViewer(Viewer):
             text = self.render_text()
             agents = self.render_dead_alive()
             board = self.render_main_board(agent_id=self.window2agent[i])
+            abilities = self.render_abilities(agent_id=self.window2agent[i], size=self._tile_size)
             # agents_board = self.render_agents_board()
 
             self._batch.draw()
@@ -332,6 +337,49 @@ class PommeViewer(Viewer):
                                        top)
             agents.append(sprite)
         return agents
+
+    def render_abilities(self, agent_id, size):
+        def get_abilities():
+            agent = self._agents[agent_id]
+            return {'ammo': agent.ammo,
+                    'strength': agent.blast_strength,
+                    'kick': agent.can_kick}
+
+        def draw_ability(fig_id, x, y, val):
+            # create the tile
+            tile = self._resource_manager.tile_from_state_value(fig_id)
+            tile.width = size; tile.height = size
+            sprite = pyglet.sprite.Sprite(
+                        tile, x, y, batch=self._batch, group=LAYER_FOREGROUND)
+
+            text = pyglet.text.Label(
+                str(val) if type(val) is not bool else '',
+                font_name='Cousine-Regular',
+                font_size=30,
+                x=x + self._tile_size + constants.MARGIN_SIZE,
+                y=y,
+                batch=self._batch,
+                group=LAYER_TOP)
+            text.color = constants.TILE_COLOR
+
+            return sprite, text
+
+
+        x_offset = self._board_size * self._tile_size + constants.BORDER_SIZE
+        x_offset += constants.MARGIN_SIZE
+        top = self.board_top(-constants.BORDER_SIZE - 8)
+        y_offset = top - constants.BORDER_SIZE
+
+        abilities = get_abilities()
+        sprite_ammo = draw_ability(6, x_offset, y_offset, abilities['ammo'])
+        sprite_bomb_strength = draw_ability(7, x_offset, y_offset - size, abilities['strength'])
+
+        sprites = [sprite_ammo, sprite_bomb_strength]
+        if abilities['kick']:
+            sprite_kick = draw_ability(8, x_offset, y_offset - size * 2, abilities['kick'])
+            sprites.append(sprite_kick)
+
+        return sprites
 
     def render_board(self, board, x_offset, y_offset, size, top=0):
         sprites = []
