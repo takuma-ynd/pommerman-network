@@ -72,7 +72,7 @@ TILE_COLOR = (248, 221, 82, 255)
 TEXT_COLOR = (170, 170, 170, 255)
 FLAME_LIFE_COLOR = (0, 0, 0, 100)
 BLAST_STRENGTH_COLOR = (150, 255, 150, 230)
-
+MOVING_DIR_COLOR = (0, 0, 0, 255)
 
 class Item(Enum):
     """The Items in the game.

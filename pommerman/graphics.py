@@ -146,7 +146,6 @@ class PixelViewer(Viewer):
             'RGB',
             frames.tobytes(),
             pitch=frames.shape[1] * -3)
-        # import ipdb; ipdb.set_trace()
         # for window in self.windows:
         #     window.clear()
         #     window.switch_to()
@@ -388,6 +387,7 @@ class PommeViewer(Viewer):
         sprites = []
         blast_strength = []
         flame_life = []
+        mov_dirs = []
         for row in range(self._board_size):
             for col in range(self._board_size):
                 x = col * size + x_offset
@@ -410,6 +410,27 @@ class PommeViewer(Viewer):
                         group=LAYER_TOP)
                     strength.color = constants.BLAST_STRENGTH_COLOR
                     blast_strength.append(strength)
+
+                    # draw bomb's moving direction if it's been kicked
+                    if bomb.moving_direction is not None:
+                        # 1: up
+                        # 2: down
+                        # 3: left
+                        # 4: right
+                        strings = ['↑', '↓', '←', '→']
+                        arrow = strings[bomb.moving_direction.value - 1]
+                        direction = pyglet.text.Label(
+                            arrow,
+                            font_name='Arial',
+                            font_size=32,
+                            bold=True,
+                            x=x + 14,
+                            y=y + 12,
+                            batch=self._batch,
+                            group=LAYER_TOP)
+                        direction.color = constants.MOVING_DIR_COLOR
+                        mov_dirs.append(direction)
+
 
                 elif tile_state == constants.Item.Flames.value:
                     # draw a flame
@@ -560,10 +581,23 @@ class PommeViewer(Viewer):
                 return bomb
 
     def get_flame(self, row, col):
+        # multiple flames can exist in a cell
+        # return the one that has the longest life
+        coexisting_flames = []
         for flame in self._flames:
             x, y = flame.position
             if x == row and y == col:
-                return flame
+                coexisting_flames.append(flame)
+
+        longest_life = -1
+        for flame in coexisting_flames:
+            if flame.life > longest_life:
+                longest_life_flame = flame
+                longest_life = longest_life_flame.life
+        return longest_life_flame
+
+
+
 
 
 class ResourceManager(object):
