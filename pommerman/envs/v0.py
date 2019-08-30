@@ -255,6 +255,7 @@ class Pomme(gym.Env):
             self._viewer.set_agents(self._agents)
             self._viewer.set_step(self._step_count)
             self._viewer.set_bombs(self._bombs)
+            self._viewer.set_flames(self._flames)
             self._viewer.render()
 
             # Register all agents which need human input with Pyglet.
@@ -269,6 +270,7 @@ class Pomme(gym.Env):
             self._viewer.set_agents(self._agents)
             self._viewer.set_step(self._step_count)
             self._viewer.set_bombs(self._bombs)
+            self._viewer.set_flames(self._flames)
             self._viewer.render()
 
         if record_pngs_dir:

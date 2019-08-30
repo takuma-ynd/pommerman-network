@@ -66,6 +66,9 @@ class Viewer(object):
     def set_bombs(self, bombs):
         self._bombs = bombs
 
+    def set_flames(self, flames):
+        self._flames= flames
+
     def set_agents(self, agents):
         self._agents = agents
         self._agent_count = len(agents)
@@ -384,15 +387,19 @@ class PommeViewer(Viewer):
     def render_board(self, board, x_offset, y_offset, size, top=0):
         sprites = []
         blast_strength = []
+        flame_life = []
         for row in range(self._board_size):
             for col in range(self._board_size):
                 x = col * size + x_offset
                 y = top - y_offset - row * size
                 tile_state = board[row][col]
                 if tile_state == constants.Item.Bomb.value:
-                    # bomb_life, bomb_strength, bomb_moving_dir = self.get_bomb_properties(row, col)
+
+                    # draw a bomb according to its life
                     bomb = self.get_bomb(row, col)
                     tile = self._resource_manager.get_bomb_tile(bomb.life)
+
+                    # draw the strength on the bomb
                     strength = pyglet.text.Label(
                         str(bomb.blast_strength),
                         font_name='Arial',
@@ -401,10 +408,27 @@ class PommeViewer(Viewer):
                         y=y + 12,
                         batch=self._batch,
                         group=LAYER_TOP)
-                    strength.color = (150, 255, 150, 200)
-                    # strength.color = (255, 255, 255, 255)
-
+                    strength.color = constants.BLAST_STRENGTH_COLOR
                     blast_strength.append(strength)
+
+                elif tile_state == constants.Item.Flames.value:
+                    # draw a flame
+                    tile = self._resource_manager.tile_from_state_value(tile_state)
+
+                    # draw the remaining time on the flame
+                    flame = self.get_flame(row, col)
+                    life = pyglet.text.Label(
+                        str(flame.life + 1),
+                        font_name='Arial',
+                        font_size=20,
+                        x=x + 17,
+                        y=y + 12,
+                        batch=self._batch,
+                        group=LAYER_TOP)
+                    life.color = constants.FLAME_LIFE_COLOR
+                    flame_life.append(life)
+
+
                 else:
                     tile = self._resource_manager.tile_from_state_value(tile_state)
                 tile.width = size
@@ -534,6 +558,12 @@ class PommeViewer(Viewer):
             x, y = bomb.position
             if x == row and y == col:
                 return bomb
+
+    def get_flame(self, row, col):
+        for flame in self._flames:
+            x, y = flame.position
+            if x == row and y == col:
+                return flame
 
 
 class ResourceManager(object):
