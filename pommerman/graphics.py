@@ -383,14 +383,28 @@ class PommeViewer(Viewer):
 
     def render_board(self, board, x_offset, y_offset, size, top=0):
         sprites = []
+        blast_strength = []
         for row in range(self._board_size):
             for col in range(self._board_size):
                 x = col * size + x_offset
                 y = top - y_offset - row * size
                 tile_state = board[row][col]
                 if tile_state == constants.Item.Bomb.value:
-                    bomb_life = self.get_bomb_life(row, col)
-                    tile = self._resource_manager.get_bomb_tile(bomb_life)
+                    # bomb_life, bomb_strength, bomb_moving_dir = self.get_bomb_properties(row, col)
+                    bomb = self.get_bomb(row, col)
+                    tile = self._resource_manager.get_bomb_tile(bomb.life)
+                    strength = pyglet.text.Label(
+                        str(bomb.blast_strength),
+                        font_name='Arial',
+                        font_size=20,
+                        x=x + 17,
+                        y=y + 12,
+                        batch=self._batch,
+                        group=LAYER_TOP)
+                    strength.color = (150, 255, 150, 200)
+                    # strength.color = (255, 255, 255, 255)
+
+                    blast_strength.append(strength)
                 else:
                     tile = self._resource_manager.tile_from_state_value(tile_state)
                 tile.width = size
@@ -398,7 +412,7 @@ class PommeViewer(Viewer):
                 sprite = pyglet.sprite.Sprite(
                     tile, x, y, batch=self._batch, group=LAYER_FOREGROUND)
                 sprites.append(sprite)
-        return sprites
+        return sprites, blast_strength
 
     def agent_view(self, agent):
         if not self._is_partially_observable:
@@ -509,11 +523,17 @@ class PommeViewer(Viewer):
         return constants.BORDER_SIZE + (
             self._board_size * self._tile_size) + x_offset
 
-    def get_bomb_life(self, row, col):
+    def get_bomb_properties(self, row, col):
         for bomb in self._bombs:
             x, y = bomb.position
             if x == row and y == col:
-                return bomb.life
+                return bomb.life, bomb.blast_strength, bomb.moving_direction
+
+    def get_bomb(self, row, col):
+        for bomb in self._bombs:
+            x, y = bomb.position
+            if x == row and y == col:
+                return bomb
 
 
 class ResourceManager(object):
