@@ -385,10 +385,25 @@ class PommeViewer(Viewer):
         return sprites
 
     def render_board(self, board, x_offset, y_offset, size, top=0):
+        def draw_blast_strength(x, y, blast_strength, color=constants.BLAST_STRENGTH_COLOR):
+            strength = pyglet.text.Label(
+                str(blast_strength),
+                font_name='Arial',
+                font_size=20,
+                x=x + 17,
+                y=y + 12,
+                batch=self._batch,
+                group=LAYER_TOP)
+            strength.color = color
+            return strength
+
         sprites = []
         blast_strength = []
         flame_life = []
         mov_dirs = []
+        bomb_positions = [bomb.position for bomb in self._bombs]
+        overlay_bombs = []
+        print(bomb_positions)
         for row in range(self._board_size):
             for col in range(self._board_size):
                 x = col * size + x_offset
@@ -401,15 +416,7 @@ class PommeViewer(Viewer):
                     tile = self._resource_manager.get_bomb_tile(bomb.life)
 
                     # draw the strength on the bomb
-                    strength = pyglet.text.Label(
-                        str(bomb.blast_strength),
-                        font_name='Arial',
-                        font_size=20,
-                        x=x + 17,
-                        y=y + 12,
-                        batch=self._batch,
-                        group=LAYER_TOP)
-                    strength.color = constants.BLAST_STRENGTH_COLOR
+                    strength = draw_blast_strength(x, y, bomb.blast_strength)
                     blast_strength.append(strength)
 
                     # draw bomb's moving direction if it's been kicked
@@ -450,9 +457,36 @@ class PommeViewer(Viewer):
                     life.color = constants.FLAME_LIFE_COLOR
                     flame_life.append(life)
 
+                elif tile_state in constants.Item.Agents.value:
+                    tile = self._resource_manager.tile_from_state_value(tile_state)
+                    # import ipdb; ipdb.set_trace()
+                    if (row, col) in bomb_positions:
+                        # draw the strength on the bomb
+                        bomb = self.get_bomb(row, col)
+                        strength = draw_blast_strength(x, y, bomb.blast_strength, color=(60, 200, 60, 230))
+                        blast_strength.append(strength)
+
+                        # overlay = self._resource_manager.get_overlay_bomb_tile(bomb.life)
+                        # import ipdb; ipdb.set_trace()
+                        # overlay.width = size
+                        # overlay.height = size
+                        # overlay_sprite = pyglet.sprite.Sprite(
+                        #     overlay, x, y, batch=self._batch, group=LAYER_TOP)
+                        # overlay_bombs.append(overlay_sprite)
 
                 else:
                     tile = self._resource_manager.tile_from_state_value(tile_state)
+                    # if tile state is agent and bomb
+                    # if tile_state in range(10, 19) and (x,y) in bomb_positions:
+                    #     import ipdb; ipdb.set_trace()
+                    #     bomb = self.get_bomb(x, y)
+                    #     overlay = self._resource_manager.get_overlay_bomb_tile(bomb.life)
+                    #     overlay.width = size
+                    #     overlay.height = size
+                    #     overlay_sprite = pyglet.sprite.Sprite(
+                    #         overlay, x, y, batch=self._batch, group=LAYER_TOP)
+                    #     overlay_bombs.append(overlay_sprite)
+
                 tile.width = size
                 tile.height = size
                 sprite = pyglet.sprite.Sprite(
@@ -608,6 +642,7 @@ class ResourceManager(object):
         self._load_fonts()
         self.images = self._load_images()
         self.bombs = self._load_bombs()
+        self.overlay_bombs = self._load_overlay_bombs()
         self._fog_value = self._get_fog_index_value()
         self._is_team = True
 
@@ -633,6 +668,16 @@ class ResourceManager(object):
     @staticmethod
     def _load_bombs():
         images_dict = constants.BOMB_DICT
+        for i in range(0, len(images_dict)):
+            image_data = images_dict[i]
+            image = pyglet.resource.image(image_data['file_name'])
+            images_dict[i]['image'] = image
+
+        return images_dict
+
+    @staticmethod
+    def _load_overlay_bombs():
+        images_dict = constants.OVERLAY_BOMB_DICT
         for i in range(0, len(images_dict)):
             image_data = images_dict[i]
             image = pyglet.resource.image(image_data['file_name'])
@@ -677,3 +722,6 @@ class ResourceManager(object):
 
     def get_bomb_tile(self, life):
         return self.bombs[life - 1]['image']
+
+    def get_overlay_bomb_tile(self, life):
+        return self.overlay_bombs[life - 1]['image']

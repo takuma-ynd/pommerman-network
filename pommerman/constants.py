@@ -53,6 +53,10 @@ BOMB_FILE_NAMES = [
     'Bomb-1', 'Bomb-2', 'Bomb-3', 'Bomb-4', 'Bomb-5', 'Bomb-6',
     'Bomb-7', 'Bomb-8', 'Bomb-9', 'Bomb-10',
 ]
+OVERLAY_BOMB_FILE_NAMES = [
+    'Bomb-overlay-1', 'Bomb-overlay-2', 'Bomb-overlay-3', 'Bomb-overlay-4', 'Bomb-overlay-5',
+    'Bomb-overlay-6', 'Bomb-overlay-7', 'Bomb-overlay-8', 'Bomb-overlay-9', 'Bomb-overlay-10'
+]
 BOMB_DICT = {
     num: {
         'id': num,
@@ -61,6 +65,16 @@ BOMB_DICT = {
         'image': None
     } for num, file_name in enumerate(BOMB_FILE_NAMES)
 }
+
+OVERLAY_BOMB_DICT = {
+    num: {
+        'id': num,
+        'file_name': '%s.png' % file_name,
+        'name': file_name,
+        'image': None
+    } for num, file_name in enumerate(OVERLAY_BOMB_FILE_NAMES)
+}
+
 FONTS_FILE_NAMES = ['Cousine-Regular.ttf']
 
 # Human view board configurations
@@ -99,6 +113,7 @@ class Item(Enum):
     Agent1 = 11
     Agent2 = 12
     Agent3 = 13
+    Agents = [Agent0, Agent1, Agent2, Agent3]
 
 
 class GameType(Enum):
