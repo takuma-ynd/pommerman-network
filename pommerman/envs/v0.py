@@ -264,7 +264,8 @@ class Pomme(gym.Env):
             # that use other Pyglet inputs such as joystick, for example.
             for agent in self._agents:
                 if agent.has_user_input():
-                    self._viewer.window.push_handlers(agent)
+                    window_id = self._viewer.agent2window[agent.agent_id]
+                    self._viewer.windows[window_id].push_handlers(agent)
         else:
             self._viewer.set_board(self._board)
             self._viewer.set_agents(self._agents)

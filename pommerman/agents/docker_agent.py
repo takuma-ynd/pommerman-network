@@ -128,7 +128,8 @@ class DockerAgent(BaseAgent):
         try:
             req = requests.post(
                 request_url,
-                timeout=0.15,
+                # timeout=0.15,
+                timeout=1.0,  # temporarily make it longer
                 json={
                     "obs":
                     obs_serialized,

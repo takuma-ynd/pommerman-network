@@ -228,7 +228,7 @@ class PommeViewer(Viewer):
                  agent_view_size=None,
                  game_type=None,
                  two_windows=True,
-                 window2agent=[0,3]
+                 window2agent=[0,2]
                  ):
         super().__init__()
         from gym.envs.classic_control import rendering
@@ -245,6 +245,7 @@ class PommeViewer(Viewer):
         self._width = width
         self.two_windows = two_windows
         self.window2agent = window2agent
+        self.agent2window = {agent: window for window, agent in enumerate(window2agent)}
         if self.two_windows:
             window0 = pyglet.window.Window(
                 width=width, height=height, display=display)
