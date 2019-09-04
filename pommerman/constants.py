@@ -53,6 +53,10 @@ BOMB_FILE_NAMES = [
     'Bomb-1', 'Bomb-2', 'Bomb-3', 'Bomb-4', 'Bomb-5', 'Bomb-6',
     'Bomb-7', 'Bomb-8', 'Bomb-9', 'Bomb-10',
 ]
+BLAST_BOMB_FILE_NAMES = [
+    'Bomb-blast-1', 'Bomb-blast-2', 'Bomb-blast-3', 'Bomb-blast-4', 'Bomb-blast-5',
+    'Bomb-blast-6', 'Bomb-blast-7', 'Bomb-blast-8', 'Bomb-blast-9',
+]
 OVERLAY_BOMB_FILE_NAMES = [
     'Bomb-overlay-1', 'Bomb-overlay-2', 'Bomb-overlay-3', 'Bomb-overlay-4', 'Bomb-overlay-5',
     'Bomb-overlay-6', 'Bomb-overlay-7', 'Bomb-overlay-8', 'Bomb-overlay-9', 'Bomb-overlay-10'
@@ -64,6 +68,15 @@ BOMB_DICT = {
         'name': file_name,
         'image': None
     } for num, file_name in enumerate(BOMB_FILE_NAMES)
+}
+
+BLAST_BOMB_DICT = {
+    num: {
+        'id': num,
+        'file_name': '%s.png' % file_name,
+        'name': file_name,
+        'image': None
+    } for num, file_name in enumerate(BLAST_BOMB_FILE_NAMES)
 }
 
 OVERLAY_BOMB_DICT = {
@@ -86,7 +99,9 @@ TILE_COLOR = (248, 221, 82, 255)
 TEXT_COLOR = (170, 170, 170, 255)
 FLAME_LIFE_COLOR = (0, 0, 0, 100)
 BLAST_STRENGTH_COLOR = (150, 255, 150, 230)
+BOMB_LIFE_COLOR = (255, 30, 30, 230)
 MOVING_DIR_COLOR = (0, 0, 0, 255)
+OVERLAY_OPACITY = 150
 
 class Item(Enum):
     """The Items in the game.
