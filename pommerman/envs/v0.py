@@ -5,7 +5,6 @@ such as in v1.py, will inherit from this.
 """
 import json
 import os
-from copy import deepcopy
 
 import numpy as np
 import time
@@ -128,7 +127,6 @@ class Pomme(gym.Env):
     def make_board(self):
         self._board = utility.make_board(self._board_size, self._num_rigid,
                                          self._num_wood, len(self._agents))
-        self._prev_board = deepcopy(self._board)
 
     def make_items(self):
         self._items = utility.make_items(self._board, self._num_items)
@@ -147,13 +145,9 @@ class Pomme(gym.Env):
             obs['step_count'] = self._step_count
         return self.observations
 
-    # def _get_rewards(self):
-    #     return self.model.get_rewards(self._agents, self._game_type,
-    #                                   self._step_count, self._max_steps)
-
     def _get_rewards(self):
-        return self.model.get_shaped_rewards(self._agents, self._game_type,
-                                             self._step_count, self._max_steps, self._prev_board, self._board, self._flames, self._num_wood)
+        return self.model.get_rewards(self._agents, self._game_type,
+                                      self._step_count, self._max_steps)
 
     def _get_done(self):
         return self.model.get_done(self._agents, self._step_count,
@@ -190,8 +184,6 @@ class Pomme(gym.Env):
 
     def step(self, actions):
         self._intended_actions = actions
-        # keep the previous board
-        self._prev_board = deepcopy(self._board)
 
         max_blast_strength = self._agent_view_size or 10
         result = self.model.step(
@@ -255,7 +247,6 @@ class Pomme(gym.Env):
             self._viewer.set_agents(self._agents)
             self._viewer.set_step(self._step_count)
             self._viewer.set_bombs(self._bombs)
-            self._viewer.set_flames(self._flames)
             self._viewer.render()
 
             # Register all agents which need human input with Pyglet.
@@ -264,14 +255,12 @@ class Pomme(gym.Env):
             # that use other Pyglet inputs such as joystick, for example.
             for agent in self._agents:
                 if agent.has_user_input():
-                    window_id = self._viewer.agent2window[agent.agent_id]
-                    self._viewer.windows[window_id].push_handlers(agent)
+                    self._viewer.window.push_handlers(agent)
         else:
             self._viewer.set_board(self._board)
             self._viewer.set_agents(self._agents)
             self._viewer.set_step(self._step_count)
             self._viewer.set_bombs(self._bombs)
-            self._viewer.set_flames(self._flames)
             self._viewer.render()
 
         if record_pngs_dir:
@@ -334,39 +323,22 @@ class Pomme(gym.Env):
     def set_json_info(self):
         """Sets the game state as the init_game_state."""
         board_size = int(self._init_game_state['board_size'])
-        agent_array = json.loads(self._init_game_state['agents'])
-        ext = self._init_game_state.get('extension') or {}
         self._board_size = board_size
         self._step_count = int(self._init_game_state['step_count'])
 
-        if ext.get('max_steps'):
-            self._max_steps = ext['max_steps']
+        board_array = json.loads(self._init_game_state['board'])
+        self._board = np.ones((board_size, board_size)).astype(np.uint8)
+        self._board *= constants.Item.Passage.value
+        for x in range(self._board_size):
+            for y in range(self._board_size):
+                self._board[x, y] = board_array[x][y]
 
-        # use utility.make_board if ext['make_board] is True
-        if ext.get('make_board'):
-            assert "num_rigid" in ext
-            assert "num_wood" in ext
-            self._board = utility.make_board(board_size, num_rigid=ext["num_rigid"], num_wood=ext["num_wood"], num_agents=len(agent_array))
-            self._num_rigid = ext['num_rigid']
-            self._num_wood= ext['num_wood']
-        else:
-            board_array = json.loads(self._init_game_state['board'])
-            self._board = np.ones((board_size, board_size)).astype(np.uint8)
-            self._board *= constants.Item.Passage.value
-            for x in range(self._board_size):
-                for y in range(self._board_size):
-                    self._board[x, y] = board_array[x][y]
+        self._items = {}
+        item_array = json.loads(self._init_game_state['items'])
+        for i in item_array:
+            self._items[tuple(i[0])] = i[1]
 
-        # use utility.make_items if ext['make_items'] is True
-        if ext.get('make_items'):
-            self._items = utility.make_items(self._board, num_items=ext.get('num_items'))
-        else:
-            self._items = {}
-            item_array = json.loads(self._init_game_state['items'])
-            for i in item_array:
-                self._items[tuple(i[0])] = i[1]
-
-        # agent_array = json.loads(self._init_game_state['agents'])  # moved to the top
+        agent_array = json.loads(self._init_game_state['agents'])
         for a in agent_array:
             agent = next(x for x in self._agents \
                          if x.agent_id == a['agent_id'])
