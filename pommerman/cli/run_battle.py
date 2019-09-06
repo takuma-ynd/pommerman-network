@@ -21,6 +21,7 @@ import time
 
 import argparse
 import numpy as np
+import requests
 
 from .. import helpers
 from .. import make
@@ -44,6 +45,18 @@ def run(args, num_times=1, seed=None):
 
     env = make(config, agents, game_state_file, render_mode=render_mode)
 
+    def send_jsonified_state(jsonified_state, request_url):
+        try:
+            req = requests.post(
+                request_url,
+                # timeout=0.15,
+                timeout=3.0,  # temporarily make it longer
+                json=jsonified_state
+            )
+        except requests.exceptions.Timeout as e:
+            print('Timeout!')
+            raise
+
     def _run(record_pngs_dir=None, record_json_dir=None):
         '''Runs a game'''
         print("Starting the Game.")
@@ -64,8 +77,13 @@ def run(args, num_times=1, seed=None):
             if args.render is False and record_json_dir:
                 env.save_json(record_json_dir)
                 time.sleep(1.0 / env._render_fps)
+
+            # get actions from all agents
             actions = env.act(obs)
             obs, reward, done, info = env.step(actions)
+
+            # send jsonified state to Messaging server
+            send_jsonified_state(env.get_json_info())
 
         print("Final Result: ", info)
         if args.render:
