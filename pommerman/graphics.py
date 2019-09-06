@@ -50,7 +50,9 @@ class Viewer(object):
         self._agent_count = 0
         self._board_state = None
         self._batch = None
+        self._selected_action = None
         self._step = 0
+        self._waiting = False
         self._agent_view_size = None
         self._is_partially_observable = False
         self.isopen = False
@@ -73,6 +75,12 @@ class Viewer(object):
 
     def set_step(self, step):
         self._step = step
+
+    def set_selected_action(self, action):
+        self._selected_action = action
+
+    def set_waiting(self, waiting):
+        self._waiting = waiting
 
     def close(self):
         self.window.close()
@@ -270,6 +278,10 @@ class PommeViewer(Viewer):
         agents = self.render_dead_alive()
         board = self.render_main_board(agent_id=agent_id)
         abilities = self.render_abilities(agent_id=agent_id, size=self._tile_size)
+        if self._selected_action is not None:
+            action = self.render_selected_action(agent_id=agent_id, size=self._tile_size)
+        if self._waiting:
+            waiting = self.render_waiting()
         # agents_board = self.render_agents_board()
 
         self._batch.draw()
@@ -450,6 +462,27 @@ class PommeViewer(Viewer):
 
         return sprites, blast_strength, overlay_bombs
 
+    def render_selected_action(self, agent_id, size):
+        assert self._selected_action is not None
+
+        def draw_action(act, x, y):
+            # create the tile
+            tile = self._resource_manager.get_action_tile(act)
+            tile.width = size; tile.height = size
+            sprite = pyglet.sprite.Sprite(
+                        tile, x, y, batch=self._batch, group=LAYER_FOREGROUND)
+
+            return sprite
+
+        x_offset = self._board_size * self._tile_size + constants.BORDER_SIZE
+        x_offset += constants.MARGIN_SIZE
+        top = self.board_top(-constants.BORDER_SIZE - 8)
+        y_offset = constants.BORDER_SIZE
+        sprite_action = draw_action(self._selected_action, x_offset, y_offset)
+
+        return sprite_action
+
+
     def agent_view(self, agent):
         if not self._is_partially_observable:
             return self._board_state
@@ -475,6 +508,23 @@ class PommeViewer(Viewer):
         image = image_pattern.create_image(self._width, self._height)
         return pyglet.sprite.Sprite(
             image, 0, 0, batch=self._batch, group=LAYER_BACKGROUND)
+
+    def render_waiting(self):
+        assert self._waiting
+        message = 'Waiting for other players...'
+        print(message)
+        waiting_text = pyglet.text.Label(
+            message,
+            font_name='Cousine-Regular',
+            font_size=30,
+            x=constants.BORDER_SIZE,
+            # y=self._board_size * self._tile_size // 2,
+            y=self._tile_size,
+            batch=self._batch,
+            group=LAYER_TOP)
+        waiting_text.color = constants.TILE_COLOR
+        waiting_text.opacity = 200
+        return waiting_text
 
     def render_text(self):
         text = []
@@ -600,6 +650,7 @@ class ResourceManager(object):
         self.bombs = self._load_bombs()
         self.blast_bombs = self._load_blast_bombs()
         self.overlay_bombs = self._load_overlay_bombs()
+        self.actions = self._load_actions()
         self._fog_value = self._get_fog_index_value()
         self._is_team = True
 
@@ -635,6 +686,16 @@ class ResourceManager(object):
     @staticmethod
     def _load_overlay_bombs():
         images_dict = constants.OVERLAY_BOMB_DICT
+        for i in range(0, len(images_dict)):
+            image_data = images_dict[i]
+            image = pyglet.resource.image(image_data['file_name'])
+            images_dict[i]['image'] = image
+
+        return images_dict
+
+    @staticmethod
+    def _load_actions():
+        images_dict = constants.ACTION_DICT
         for i in range(0, len(images_dict)):
             image_data = images_dict[i]
             image = pyglet.resource.image(image_data['file_name'])
@@ -697,3 +758,6 @@ class ResourceManager(object):
 
     def get_overlay_bomb_tile(self, life):
         return self.overlay_bombs[life - 1]['image']
+
+    def get_action_tile(self, action):
+        return self.actions[action]['image']

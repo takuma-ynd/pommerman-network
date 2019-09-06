@@ -61,6 +61,10 @@ OVERLAY_BOMB_FILE_NAMES = [
     'Bomb-overlay-1', 'Bomb-overlay-2', 'Bomb-overlay-3', 'Bomb-overlay-4', 'Bomb-overlay-5',
     'Bomb-overlay-6', 'Bomb-overlay-7', 'Bomb-overlay-8', 'Bomb-overlay-9', 'Bomb-overlay-10'
 ]
+ACTION_FILE_NAMES =[
+    'action-stop', 'action-up', 'action-down', 'action-left', 'action-right', 'action-bomb'
+]
+
 BOMB_DICT = {
     num: {
         'id': num,
@@ -86,6 +90,15 @@ OVERLAY_BOMB_DICT = {
         'name': file_name,
         'image': None
     } for num, file_name in enumerate(OVERLAY_BOMB_FILE_NAMES)
+}
+
+ACTION_DICT = {
+    num: {
+        'id': num,
+        'file_name': '%s.png' % file_name,
+        'name': file_name,
+        'image': None
+    } for num, file_name in enumerate(ACTION_FILE_NAMES)
 }
 
 FONTS_FILE_NAMES = ['Cousine-Regular.ttf']
