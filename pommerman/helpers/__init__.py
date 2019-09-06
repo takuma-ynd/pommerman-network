@@ -13,7 +13,7 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
     
     agent_type, agent_control = agent_string.split("::")
 
-    assert agent_type in ["player", "playerblock", "simple", "random", "docker", "http" , "test", "tensorforce"]
+    assert agent_type in ["player", "playerblock", "simple", "random", "docker", "http" , "test", "tensorforce", "multiplayers"]
 
     agent_instance = None
 
@@ -34,6 +34,16 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
         assert port is not None
         agent_instance = agents.DockerAgent(
             agent_control, port=port, server=server, env_vars=docker_env_dict)
+    elif agent_type == "multiplayers":
+        port = agent_id + 1000
+        if not USE_GAME_SERVERS:
+            server = 'http://localhost'
+        else:
+            server = GAME_SERVERS[agent_id]
+        assert port is not None
+        print("using port {} for agent {}".format(port, agent_id))
+        agent_instance = agents.MultiPlayerAgent(port=port, server=server)
+
     elif agent_type == "http":
         host, port = agent_control.split(":")
         agent_instance = agents.HttpAgent(port=port, host=host)

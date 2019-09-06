@@ -24,7 +24,7 @@ class BaseAgent:
         """
         pass
 
-    def init_agent(self, id_, game_type):
+    def init_agent(self, id_, game_type, env_info=None):
         self._character = self._character(id_, game_type)
 
     @staticmethod

@@ -9,3 +9,4 @@ from .simple_agent import SimpleAgent
 from .static_agent import StaticAgent
 from .runaway_agent import RunawayAgent
 from .tensorforce_agent import TensorForceAgent
+from .multiplayer_over_net_agent import MultiPlayerAgent
