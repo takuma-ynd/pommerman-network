@@ -25,6 +25,7 @@ import requests
 
 from .. import helpers
 from .. import make
+from .. import constants
 from pommerman import utility
 
 
@@ -49,12 +50,12 @@ def run(args, num_times=1, seed=None):
         try:
             req = requests.post(
                 request_url,
-                # timeout=0.15,
-                timeout=3.0,  # temporarily make it longer
+                timeout=0.15,
+                # timeout=3.0,  # temporarily make it longer
                 json=jsonified_state
             )
         except requests.exceptions.Timeout as e:
-            print('Timeout!')
+            print('send_jsonified_state Timeout...')
             raise
 
     def _run(record_pngs_dir=None, record_json_dir=None):
@@ -83,7 +84,9 @@ def run(args, num_times=1, seed=None):
             obs, reward, done, info = env.step(actions)
 
             # send jsonified state to Messaging server
-            send_jsonified_state(env.get_json_info(), 'http://localhost{}/step'.format(port))
+            url = 'http://localhost:{}/step'.format(args.port)
+            print("sending jsonified state to {}".format(url))
+            send_jsonified_state(env.get_json_info(), url)
 
         print("Final Result: ", info)
         if args.render:
