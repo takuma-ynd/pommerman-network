@@ -83,7 +83,7 @@ def run(args, num_times=1, seed=None):
             obs, reward, done, info = env.step(actions)
 
             # send jsonified state to Messaging server
-            send_jsonified_state(env.get_json_info())
+            send_jsonified_state(env.get_json_info(), 'http://localhost{}/step'.format(port))
 
         print("Final Result: ", info)
         if args.render:
@@ -186,6 +186,10 @@ def main():
         '--do_sleep',
         default=True,
         help="Whether we sleep after each rendering.")
+    parser.add_argument(
+        '--port',
+        default=8000,
+        help="port number to send game state for each step.")
     args = parser.parse_args()
     run(args)
 
