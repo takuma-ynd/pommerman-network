@@ -45,6 +45,7 @@ def run(args, num_times=1, seed=None):
     ]
 
     env = make(config, agents, game_state_file, render_mode=render_mode)
+    env._is_partially_observable = False  # NOTE: keep it False even if agents' obs are partial (this is to set the visualization right)
 
     def send_jsonified_state(jsonified_state, request_url):
         try:

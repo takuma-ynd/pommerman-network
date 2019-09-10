@@ -130,7 +130,7 @@ class MultiPlayerAgent(BaseAgent):
             req = requests.post(
                 request_url,
                 # timeout=0.15,
-                timeout=10.0,  # temporarily make it longer
+                timeout=None,  # temporarily make it infinity
                 json={
                     "obs":
                     obs_serialized,
