@@ -649,7 +649,6 @@ class ResourceManager(object):
         self.images = self._load_images()
         self.bombs = self._load_bombs()
         self.blast_bombs = self._load_blast_bombs()
-        self.overlay_bombs = self._load_overlay_bombs()
         self.actions = self._load_actions()
         self._fog_value = self._get_fog_index_value()
         self._is_team = True
@@ -676,16 +675,6 @@ class ResourceManager(object):
     @staticmethod
     def _load_bombs():
         images_dict = constants.BOMB_DICT
-        for i in range(0, len(images_dict)):
-            image_data = images_dict[i]
-            image = pyglet.resource.image(image_data['file_name'])
-            images_dict[i]['image'] = image
-
-        return images_dict
-
-    @staticmethod
-    def _load_overlay_bombs():
-        images_dict = constants.OVERLAY_BOMB_DICT
         for i in range(0, len(images_dict)):
             image_data = images_dict[i]
             image = pyglet.resource.image(image_data['file_name'])
@@ -755,9 +744,6 @@ class ResourceManager(object):
         if blast_strength > 10:
             return self.blast_bombs[-1]['image']
         return self.blast_bombs[blast_strength - 2]['image']
-
-    def get_overlay_bomb_tile(self, life):
-        return self.overlay_bombs[life - 1]['image']
 
     def get_action_tile(self, action):
         return self.actions[action]['image']
