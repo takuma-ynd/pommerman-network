@@ -171,6 +171,8 @@ class Action(Enum):
     Right = 4
     Bomb = 5
 
+action2name = [Action.Stop, Action.Up, Action.Down, Action.Left, Action.Right, Action.Bomb]
+
 
 class Result(Enum):
     '''The results available for the end of the game'''
