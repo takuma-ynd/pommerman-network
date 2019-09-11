@@ -70,6 +70,10 @@ def run(args, num_times=1, seed=None):
         obs = env.reset()
         done = False
 
+        # send the initial observations to human-remote-control agents
+        env.notify_obs(obs)
+
+
         while not done:
             if args.render:
                 env.render(
