@@ -4,6 +4,8 @@ This includes not just ints but also classes like Item, GameType, Action, etc.
 """
 from enum import Enum
 
+AGENT_BASE_PORT = 10000
+
 RENDER_FPS = 15
 BOARD_SIZE = 11
 NUM_RIGID = 36

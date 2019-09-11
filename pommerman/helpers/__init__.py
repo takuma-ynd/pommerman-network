@@ -1,6 +1,7 @@
 ''' Helpers'''
 import os
 from .. import agents
+from .. import constants
 
 USE_GAME_SERVERS = os.getenv("PLAYGROUND_USE_GAME_SERVERS")
 GAME_SERVERS = {id_: os.getenv("PLAYGROUND_GAME_INSTANCE_%d" % id_)
@@ -26,7 +27,7 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
     elif agent_type == "random":
         agent_instance = agents.RandomAgent()
     elif agent_type == "docker":
-        port = agent_id + 1000
+        port = agent_id + constants.AGENT_BASE_PORT
         if not USE_GAME_SERVERS:
             server = 'http://localhost'
         else:
@@ -35,7 +36,7 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
         agent_instance = agents.DockerAgent(
             agent_control, port=port, server=server, env_vars=docker_env_dict)
     elif agent_type == "multiplayers":
-        port = agent_id + 1000
+        port = agent_id + constants.AGENT_BASE_PORT
         if not USE_GAME_SERVERS:
             server = 'http://localhost'
         else:

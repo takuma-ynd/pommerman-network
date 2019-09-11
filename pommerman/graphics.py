@@ -26,6 +26,7 @@ try:
     LAYER_BACKGROUND = pyglet.graphics.OrderedGroup(0)
     LAYER_FOREGROUND = pyglet.graphics.OrderedGroup(1)
     LAYER_TOP = pyglet.graphics.OrderedGroup(2)
+    LAYER_OVERLAY = pyglet.graphics.OrderedGroup(3)
 except pyglet.canvas.xlib.NoSuchDisplayException as error:
     print("Import error NSDE! You will not be able to render --> %s" % error)
 except ImportError as error:
@@ -53,6 +54,7 @@ class Viewer(object):
         self._selected_action = None
         self._step = 0
         self._waiting = False
+        self._yourturn = False
         self._gameover = False
         self._agent_view_size = None
         self._is_partially_observable = False
@@ -287,6 +289,9 @@ class PommeViewer(Viewer):
         if self._waiting:
             waiting = self.render_waiting()
 
+        if self._yourturn:
+            waiting = self.render_yourturn()
+
         if self._gameover:
             waiting = self.render_gameover()
         # agents_board = self.render_agents_board()
@@ -518,12 +523,23 @@ class PommeViewer(Viewer):
 
     def render_waiting(self):
         assert self._waiting
+        # hacky way to put gray shade on the game screen
+        fog_image = self._resource_manager.fog_tile()
+        waiting_shade = pyglet.sprite.Sprite(
+            fog_image,
+            0,
+            0,
+            batch=self._batch,
+            group=LAYER_OVERLAY)
+        waiting_shade.scale = 20
+        waiting_shade.color = (0,0,0)  # black
+        waiting_shade.opacity = 150
+
         message = 'Waiting for other players...'
-        print(message)
         waiting_text = pyglet.text.Label(
             message,
             font_name='Cousine-Regular',
-            font_size=30,
+            font_size=14,
             x=constants.BORDER_SIZE,
             # y=self._board_size * self._tile_size // 2,
             y=self._tile_size,
@@ -531,7 +547,26 @@ class PommeViewer(Viewer):
             group=LAYER_TOP)
         waiting_text.color = constants.TILE_COLOR
         waiting_text.opacity = 200
-        return waiting_text
+        return waiting_shade, waiting_text
+
+    def render_yourturn(self):
+        message = "It's your turn..."
+        x = constants.BORDER_SIZE + self._tile_size * 2
+        y = constants.BORDER_SIZE + self._tile_size * 6
+        self.render_message(message, x, y)
+
+    def render_message(self, message, x, y, font_size=14, color=constants.TILE_COLOR, opacity=255):
+        message_obj = pyglet.text.Label(
+            message,
+            font_name='Cousine-Regular',
+            font_size=14,
+            x=x,
+            y=y,
+            batch=self._batch,
+            group=LAYER_TOP)
+        message_obj.color = color
+        message_obj.opacity = opacity
+        return waiting_shade, waiting_text
 
     def render_gameover(self):
         message = 'Game Over'
