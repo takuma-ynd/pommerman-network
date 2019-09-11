@@ -53,6 +53,7 @@ class Viewer(object):
         self._selected_action = None
         self._step = 0
         self._waiting = False
+        self._gameover = False
         self._agent_view_size = None
         self._is_partially_observable = False
         self.isopen = False
@@ -81,6 +82,9 @@ class Viewer(object):
 
     def set_waiting(self, waiting):
         self._waiting = waiting
+
+    def set_gameover(self):
+        self._gameover = True
 
     def close(self):
         self.window.close()
@@ -282,6 +286,9 @@ class PommeViewer(Viewer):
             action = self.render_selected_action(agent_id=agent_id, size=self._tile_size)
         if self._waiting:
             waiting = self.render_waiting()
+
+        if self._gameover:
+            waiting = self.render_gameover()
         # agents_board = self.render_agents_board()
 
         self._batch.draw()
@@ -525,6 +532,22 @@ class PommeViewer(Viewer):
         waiting_text.color = constants.TILE_COLOR
         waiting_text.opacity = 200
         return waiting_text
+
+    def render_gameover(self):
+        message = 'Game Over'
+        waiting_text = pyglet.text.Label(
+            message,
+            font_name='Cousine-Regular',
+            font_size=30,
+            x=constants.BORDER_SIZE + self._tile_size * 4,
+            # y=self._board_size * self._tile_size // 2,
+            y=constants.BORDER_SIZE + self._tile_size * 6,
+            batch=self._batch,
+            group=LAYER_TOP)
+        waiting_text.color = constants.TILE_COLOR
+        waiting_text.opacity = 200
+        return waiting_text
+
 
     def render_text(self):
         text = []

@@ -148,6 +148,18 @@ class MultiPlayerAgent(BaseAgent):
                 return 0
         return action
 
+    def die(self):
+        request_url = "http://localhost:{}/die".format(self._port)
+        try:
+            req = requests.get(
+                request_url,
+                timeout=0.5
+                )
+        except requests.exceptions.Timeout as e:
+            print('Timeout in episode_end()!')
+
+        self._character.die()
+
     def episode_end(self, reward):
         request_url = "http://localhost:{}/episode_end".format(self._port)
         try:
