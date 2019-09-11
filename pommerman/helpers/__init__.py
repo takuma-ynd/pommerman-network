@@ -41,7 +41,7 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
         else:
             server = GAME_SERVERS[agent_id]
         assert port is not None
-        print("using port {} for agent {}".format(port, agent_id))
+        print("NOTE: using port {} for agent {}".format(port, agent_id))
         agent_instance = agents.MultiPlayerAgent(port=port, server=server)
 
     elif agent_type == "http":
