@@ -207,6 +207,14 @@ class Pomme(gym.Env):
         reward = self._get_rewards()
         info = self._get_info(done, reward)
 
+        # additional logic to terminate the game:
+        # Whenever one of human agents is killed, the game terminates.
+        # Note that I don't modify the reward accordingly
+        if not done:  # if already done, don't bother.
+            human_control_agents = [agent for agent in self._agents if hasattr(agent, '_is_human_controlled') and agent._is_human_controlled]
+            if any(not agent.is_alive for agent in human_control_agents):
+                done = True
+
         if done:
             # Callback to let the agents know that the game has ended.
             for agent in self._agents:
