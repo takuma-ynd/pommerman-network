@@ -363,7 +363,7 @@ class PommeViewer(Viewer):
 
         abilities = get_abilities()
         sprite_ammo = draw_ability(6, x_offset, y_offset, abilities['ammo'])
-        sprite_bomb_strength = draw_ability(7, x_offset, y_offset - size, abilities['strength'])
+        sprite_bomb_strength = draw_ability(7, x_offset, y_offset - size, abilities['strength'] - 1)
 
         sprites = [sprite_ammo, sprite_bomb_strength]
         if abilities['kick']:
