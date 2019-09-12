@@ -36,6 +36,7 @@ class MultiPlayerAgent(BaseAgent):
         self._port = port
         self._timeout = 32
         self._container = None
+        self._is_human_controlled = True
         # self._env_vars = env_vars or {}
         # Pass env variables starting with DOCKER_AGENT to the container.
         # for key, value in os.environ.items():
@@ -163,6 +164,7 @@ class MultiPlayerAgent(BaseAgent):
         return action
 
     def die(self):
+        # notify the death to the agent
         request_url = "http://localhost:{}/die".format(self._port)
         try:
             req = requests.get(

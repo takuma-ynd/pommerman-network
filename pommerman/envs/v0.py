@@ -321,7 +321,9 @@ class Pomme(gym.Env):
             'bombs': self._bombs,
             'flames': self._flames,
             'items': [[k, i] for k, i in self._items.items()],
-            'intended_actions': self._intended_actions
+            'intended_actions': self._intended_actions,
+            'agent_port': {str(agent.agent_id): agent._port if hasattr(agent, '_port') else "-1" for agent in self._agents},
+            'is_human_controlled': {str(agent.agent_id): agent._is_human_controlled if hasattr(agent, '_is_human_controlled') else False for agent in self._agents},
         }
         for key, value in ret.items():
             ret[key] = json.dumps(value, cls=utility.PommermanJSONEncoder)
