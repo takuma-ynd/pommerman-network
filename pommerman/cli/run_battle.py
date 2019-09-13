@@ -51,8 +51,8 @@ def run(args, num_times=1, seed=None):
         try:
             req = requests.post(
                 request_url,
-                timeout=0.15,
-                # timeout=3.0,  # temporarily make it longer
+                # timeout=0.15,
+                timeout=3.0,  # temporarily make it longer
                 json=jsonified_state
             )
         except requests.exceptions.Timeout as e:
