@@ -212,8 +212,26 @@ class Pomme(gym.Env):
         # Note that I don't modify the reward accordingly
         if not done:  # if already done, don't bother.
             human_control_agents = [agent for agent in self._agents if hasattr(agent, '_is_human_controlled') and agent._is_human_controlled]
-            if any(not agent.is_alive for agent in human_control_agents):
+            other_agents = [agent for agent in self._agents if agent not in human_control_agents]
+
+            n_dead_human_agents = sum(not agent.is_alive for agent in human_control_agents)
+            n_dead_other_agents = sum(not agent.is_alive for agent in other_agents)
+            if n_dead_human_agents > 0:
                 done = True
+
+                # if both human-agents are dead, it should've been handled already.
+                if n_dead_human_agents == 2:
+                    print("WARNING: n_dead_human_agents==2 but not done...")
+
+                # if no enemies are dead, penalize human
+                if n_dead_other_agents == 0:
+                    reward = [-1 if agent in human_control_agents else 1 for agent in self._agents]
+                # if that kills one of the enemies, it's like draw
+                elif n_dead_other_agents == 1:
+                    reward = [0 for agent in self._agents]
+                else:
+                    print("WARNING: n_dead_other_agents==2 but not done...")
+
 
         if done:
             # Callback to let the agents know that the game has ended.
