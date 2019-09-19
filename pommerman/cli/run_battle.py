@@ -111,6 +111,9 @@ def run(args, num_times=1, seed=None):
             jsonified_state = env.get_json_info()
             send_json(jsonified_state, url)
 
+        # send the final observations to human-remote-control agents
+        env.notify_obs(obs)
+
         print("Final Result: ", info)
         if args.render:
             env.render(

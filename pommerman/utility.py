@@ -74,12 +74,17 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
 
     def lay_rigid_wall_bomberman_like(coordinates, board):
         '''Lays rigid walls periodically'''
-        assert board.shape[0] % 2 == 1
-        for i in range(board.shape[0]):
-            for j in range(board.shape[1]):
-                if i%2 == 1 and j%2 == 1:
+        assert size % 2 == 1
+        laid_walls = 0
+        for i in range(size):
+            for j in range(size):
+                outer = (i == 0 or i == size-1 or j == 0 or j == size-1)
+                inner = (i % 2 == 0 and j % 2 == 0)
+                if outer or inner:
                     board[i,j] = constants.Item.Rigid.value
                     coordinates.discard((i,j))
+                    laid_walls += 1
+        return laid_walls
 
     def make(size, num_rigid, num_wood, num_agents):
         '''Constructs a game/board'''
@@ -98,10 +103,10 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
         # Agent2 is in bottom right. Agent 3 is in top right.
         assert (num_agents % 2 == 0)
 
-        if bomberman_like:
-            agent_positions = [(0,0), (size-1, 0), (size-1, size-1), (0, size-1)]
-        else:
-            agent_positions = [(1, 1), (size - 2, 1), (size - 2, size - 2), (1, size - 2)]
+        # if bomberman_like:
+        #     agent_positions = [(0,0), (size-1, 0), (size-1, size-1), (0, size-1)]
+        # else:
+        agent_positions = [(1, 1), (size - 2, 1), (size - 2, size - 2), (1, size - 2)]
 
         if num_agents == 2:
             board[agent_positions[0]] = constants.Item.Agent0.value
@@ -119,48 +124,50 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
                 coordinates.remove(position)
 
         # Exclude breathing room on either side of the agents.
-        if bomberman_like:
-            for i,j in [(0,1), (1,0)]:
-                coordinates.remove((i,j))
-                coordinates.remove((size-1 - i, size - 1 - j))
-                coordinates.remove((size-1 - i, j))
-                coordinates.remove((i, size-1 - j))
-        else:
-            for i in range(2, 4):
-                coordinates.remove((1, i))
-                coordinates.remove((i, 1))
-                coordinates.remove((size - 2, size - i - 1))
-                coordinates.remove((size - i - 1, size - 2))
+        # if bomberman_like:
+            # for i,j in [(0,1), (1,0)]:
+            #     coordinates.remove((i,j))
+            #     coordinates.remove((size-1 - i, size - 1 - j))
+            #     coordinates.remove((size-1 - i, j))
+            #     coordinates.remove((i, size-1 - j))
+        # else:
+        for i in range(2, 4):
+            coordinates.remove((1, i))
+            coordinates.remove((i, 1))
+            coordinates.remove((size - 2, size - i - 1))
+            coordinates.remove((size - i - 1, size - 2))
 
-                if num_agents == 4:
-                    coordinates.remove((1, size - i - 1))
-                    coordinates.remove((size - i - 1, 1))
-                    coordinates.remove((i, size - 2))
-                    coordinates.remove((size - 2, i))
+            if num_agents == 4:
+                coordinates.remove((1, size - i - 1))
+                coordinates.remove((size - i - 1, 1))
+                coordinates.remove((i, size - 2))
+                coordinates.remove((size - 2, i))
 
         # Lay down wooden walls providing guaranteed passage to other agents.
         wood = constants.Item.Wood.value
 
         if bomberman_like:
-            for i in range(3, size - 3):
-                board[0, i] = wood
-                board[size - i - 1, 0] = wood
-                board[size - 1, size - i - 1] = wood
-                board[size - i - 1, size - 1] = wood
-                coordinates.remove((0, i))
-                coordinates.remove((size - i - 1, 0))
-                coordinates.remove((size - 1, size - i - 1))
-                coordinates.remove((size - i - 1, size - 1))
-                num_wood -= 4
-            board[2,2] = wood
-            board[2, size-1 - 2] = wood
-            board[size-1 - 2, 2] = wood
-            board[size-1 - 2, size-1 - 2] = wood
-            coordinates.discard((2,2))
-            coordinates.discard((2, size-1 - 2))
-            coordinates.discard((size-1 - 2, 2))
-            coordinates.discard((size-1 - 2, size-1 - 2))
-            num_wood -= 4
+            # for i in range(3, size - 3):
+            #     board[0, i] = wood
+            #     board[size - i - 1, 0] = wood
+            #     board[size - 1, size - i - 1] = wood
+            #     board[size - i - 1, size - 1] = wood
+            #     coordinates.remove((0, i))
+            #     coordinates.remove((size - i - 1, 0))
+            #     coordinates.remove((size - 1, size - i - 1))
+            #     coordinates.remove((size - i - 1, size - 1))
+            #     num_wood -= 4
+
+            # board[2,2] = wood
+            # board[2, size-1 - 2] = wood
+            # board[size-1 - 2, 2] = wood
+            # board[size-1 - 2, size-1 - 2] = wood
+            # coordinates.discard((2,2))
+            # coordinates.discard((2, size-1 - 2))
+            # coordinates.discard((size-1 - 2, 2))
+            # coordinates.discard((size-1 - 2, size-1 - 2))
+            # num_wood -= 4
+            pass
         else:
             if num_agents == 4:
                 for i in range(4, size - 4):
@@ -176,11 +183,12 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
 
         # Lay down the rigid walls.
         if bomberman_like:
-            lay_rigid_wall_bomberman_like(coordinates, board)
-        else:
-            while num_rigid > 0:
-                num_rigid = lay_wall(constants.Item.Rigid.value, num_rigid,
-                                    coordinates, board)
+            laid_walls = lay_rigid_wall_bomberman_like(coordinates, board)
+            num_rigid -= laid_walls
+
+        while num_rigid > 0:
+            num_rigid = lay_wall(constants.Item.Rigid.value, num_rigid,
+                                coordinates, board)
 
         # Lay down the wooden walls.
         while num_wood > 0:
@@ -189,8 +197,8 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
 
         return board, agents
 
-    assert (num_rigid % 2 == 0)
-    assert (num_wood % 2 == 0)
+    # assert (num_rigid % 2 == 0)
+    # assert (num_wood % 2 == 0)
     board, agents = make(size, num_rigid, num_wood, num_agents)
 
     # Make sure it's possible to reach most of the passages.
