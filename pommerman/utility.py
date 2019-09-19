@@ -36,7 +36,7 @@ class PommermanJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def make_board(size, num_rigid=0, num_wood=0, num_agents=4):
+def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False):
     """Make the random but symmetric board.
 
     The numbers refer to the Item enum in constants. This is:
@@ -71,6 +71,16 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4):
         num_left -= 2
         return num_left
 
+
+    def lay_rigid_wall_bomberman_like(coordinates, board):
+        '''Lays rigid walls periodically'''
+        assert board.shape[0] % 2 == 1
+        for i in range(board.shape[0]):
+            for j in range(board.shape[1]):
+                if i%2 == 1 and j%2 == 1:
+                    board[i,j] = constants.Item.Rigid.value
+                    coordinates.discard((i,j))
+
     def make(size, num_rigid, num_wood, num_agents):
         '''Constructs a game/board'''
         # Initialize everything as a passage.
@@ -88,52 +98,89 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4):
         # Agent2 is in bottom right. Agent 3 is in top right.
         assert (num_agents % 2 == 0)
 
-        if num_agents == 2:
-            board[1, 1] = constants.Item.Agent0.value
-            board[size - 2, size - 2] = constants.Item.Agent1.value
-            agents = [(1, 1), (size - 2, size - 2)]
+        if bomberman_like:
+            agent_positions = [(0,0), (size-1, 0), (size-1, size-1), (0, size-1)]
         else:
-            board[1, 1] = constants.Item.Agent0.value
-            board[size - 2, 1] = constants.Item.Agent1.value
-            board[size - 2, size - 2] = constants.Item.Agent2.value
-            board[1, size - 2] = constants.Item.Agent3.value
-            agents = [(1, 1), (size - 2, 1), (1, size - 2), (size - 2, size - 2)]
+            agent_positions = [(1, 1), (size - 2, 1), (size - 2, size - 2), (1, size - 2)]
+
+        if num_agents == 2:
+            board[agent_positions[0]] = constants.Item.Agent0.value
+            board[agent_positions[-1]] = constants.Item.Agent1.value
+            agents = [agent_positions[0], agent_positions[-1]]
+        else:
+            board[agent_positions[0]] = constants.Item.Agent0.value
+            board[agent_positions[1]] = constants.Item.Agent1.value
+            board[agent_positions[2]] = constants.Item.Agent2.value
+            board[agent_positions[3]] = constants.Item.Agent3.value
+            agents = agent_positions
 
         for position in agents:
             if position in coordinates:
                 coordinates.remove(position)
 
         # Exclude breathing room on either side of the agents.
-        for i in range(2, 4):
-            coordinates.remove((1, i))
-            coordinates.remove((i, 1))
-            coordinates.remove((size - 2, size - i - 1))
-            coordinates.remove((size - i - 1, size - 2))
+        if bomberman_like:
+            for i,j in [(0,1), (1,0)]:
+                coordinates.remove((i,j))
+                coordinates.remove((size-1 - i, size - 1 - j))
+                coordinates.remove((size-1 - i, j))
+                coordinates.remove((i, size-1 - j))
+        else:
+            for i in range(2, 4):
+                coordinates.remove((1, i))
+                coordinates.remove((i, 1))
+                coordinates.remove((size - 2, size - i - 1))
+                coordinates.remove((size - i - 1, size - 2))
 
-            if num_agents == 4:
-                coordinates.remove((1, size - i - 1))
-                coordinates.remove((size - i - 1, 1))
-                coordinates.remove((i, size - 2))
-                coordinates.remove((size - 2, i))
+                if num_agents == 4:
+                    coordinates.remove((1, size - i - 1))
+                    coordinates.remove((size - i - 1, 1))
+                    coordinates.remove((i, size - 2))
+                    coordinates.remove((size - 2, i))
 
         # Lay down wooden walls providing guaranteed passage to other agents.
         wood = constants.Item.Wood.value
-        if num_agents == 4:
-            for i in range(4, size - 4):
-                board[1, i] = wood
-                board[size - i - 1, 1] = wood
-                board[size - 2, size - i - 1] = wood
-                board[size - i - 1, size - 2] = wood
-                coordinates.remove((1, i))
-                coordinates.remove((size - i - 1, 1))
-                coordinates.remove((size - 2, size - i - 1))
-                coordinates.remove((size - i - 1, size - 2))
+
+        if bomberman_like:
+            for i in range(3, size - 3):
+                board[0, i] = wood
+                board[size - i - 1, 0] = wood
+                board[size - 1, size - i - 1] = wood
+                board[size - i - 1, size - 1] = wood
+                coordinates.remove((0, i))
+                coordinates.remove((size - i - 1, 0))
+                coordinates.remove((size - 1, size - i - 1))
+                coordinates.remove((size - i - 1, size - 1))
                 num_wood -= 4
+            board[2,2] = wood
+            board[2, size-1 - 2] = wood
+            board[size-1 - 2, 2] = wood
+            board[size-1 - 2, size-1 - 2] = wood
+            coordinates.discard((2,2))
+            coordinates.discard((2, size-1 - 2))
+            coordinates.discard((size-1 - 2, 2))
+            coordinates.discard((size-1 - 2, size-1 - 2))
+            num_wood -= 4
+        else:
+            if num_agents == 4:
+                for i in range(4, size - 4):
+                    board[1, i] = wood
+                    board[size - i - 1, 1] = wood
+                    board[size - 2, size - i - 1] = wood
+                    board[size - i - 1, size - 2] = wood
+                    coordinates.remove((1, i))
+                    coordinates.remove((size - i - 1, 1))
+                    coordinates.remove((size - 2, size - i - 1))
+                    coordinates.remove((size - i - 1, size - 2))
+                    num_wood -= 4
 
         # Lay down the rigid walls.
-        while num_rigid > 0:
-            num_rigid = lay_wall(constants.Item.Rigid.value, num_rigid,
-                                 coordinates, board)
+        if bomberman_like:
+            lay_rigid_wall_bomberman_like(coordinates, board)
+        else:
+            while num_rigid > 0:
+                num_rigid = lay_wall(constants.Item.Rigid.value, num_rigid,
+                                    coordinates, board)
 
         # Lay down the wooden walls.
         while num_wood > 0:

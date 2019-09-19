@@ -99,6 +99,51 @@ def team_competition_env():
     return locals()
 
 
+def team_competition_small_env():
+    """Start up a Team config with the competition settings."""
+    env = envs.v0.Pomme
+    game_type = constants.GameType.Team
+    env_entry_point = 'pommerman.envs.v0:Pomme'
+    env_id = 'PommeTeamCompetitionSmall-v0'
+    env_kwargs = {
+        'game_type': game_type,
+        'board_size': 9,
+        'num_rigid': 24,
+        'num_wood': 36,
+        'num_items': constants.NUM_ITEMS + 10,
+        'max_steps': constants.MAX_STEPS,
+        'render_fps': constants.RENDER_FPS,
+        'agent_view_size': 3,
+        'is_partially_observable': True,
+        'env': env_entry_point,
+    }
+    agent = characters.Bomber
+    return locals()
+
+
+def team_competition_small_bommbermanlike_env():
+    """Start up a Team config with the competition settings."""
+    env = envs.v0.Pomme
+    game_type = constants.GameType.Team
+    env_entry_point = 'pommerman.envs.v0:Pomme'
+    env_id = 'PommeTeamCompetitionSmallBombermanlike-v0'
+    env_kwargs = {
+        'game_type': game_type,
+        'board_size': 9,
+        'num_rigid': int(constants.NUM_RIGID * (9*9) / (11*11)),
+        'num_wood': int(constants.NUM_WOOD * (9*9) / (11*11)),
+        'num_items': constants.NUM_ITEMS,
+        'max_steps': constants.MAX_STEPS,
+        'render_fps': constants.RENDER_FPS,
+        'agent_view_size': 3,
+        'is_partially_observable': True,
+        'bomberman_like': True,
+        'env': env_entry_point,
+    }
+    agent = characters.Bomber
+    return locals()
+
+
 def team_competition_fast_env():
     """Start up a Team config with the competition settings."""
     env = envs.v0.Pomme
