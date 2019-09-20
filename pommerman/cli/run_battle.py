@@ -111,8 +111,12 @@ def run(args, num_times=1, seed=None):
             jsonified_state = env.get_json_info()
             send_json(jsonified_state, url)
 
-        # send the final observations to human-remote-control agents
-        env.notify_obs(obs)
+        # send the final and whole observation to human-remote-control agents
+        old_is_partially_observable = env._is_partially_observable
+        env._is_partially_observable = False
+        full_observations = env.get_observations()
+        env.notify_obs(full_observations, visualize_whole=True)
+        env._is_partially_observable = old_is_partially_observable
 
         print("Final Result: ", info)
         if args.render:
