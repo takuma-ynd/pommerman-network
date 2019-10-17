@@ -44,6 +44,7 @@ setup(name='pommerman',
       entry_points={
         'console_scripts': [
             'pom_battle=pommerman.cli.run_battle:main',
+            'pom_battle_comm=pommerman.cli.run_battle_comm:main',
             'pom_tf_battle=pommerman.cli.train_with_tensorforce:main',
             'ion_client=pommerman.network.client:init',
             'ion_server=pommerman.network.server:init'
