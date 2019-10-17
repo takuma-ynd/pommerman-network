@@ -26,7 +26,8 @@ try:
     LAYER_BACKGROUND = pyglet.graphics.OrderedGroup(0)
     LAYER_FOREGROUND = pyglet.graphics.OrderedGroup(1)
     LAYER_TOP = pyglet.graphics.OrderedGroup(2)
-    LAYER_OVERLAY = pyglet.graphics.OrderedGroup(3)
+    LAYER_TOPPER = pyglet.graphics.OrderedGroup(3)
+    LAYER_OVERLAY = pyglet.graphics.OrderedGroup(4)
 except pyglet.canvas.xlib.NoSuchDisplayException as error:
     print("Import error NSDE! You will not be able to render --> %s" % error)
 except ImportError as error:
@@ -55,6 +56,7 @@ class Viewer(object):
         self._step = 0
         self._waiting = False
         self._yourturn = False
+        self._collapse_alert_map = None
         self._gameover = False
         self._agent_view_size = None
         self._is_partially_observable = False
@@ -84,6 +86,9 @@ class Viewer(object):
 
     def set_waiting(self, waiting):
         self._waiting = waiting
+
+    def set_collapse_alert_map(self, alert_map):
+        self._collapse_alert_map = alert_map
 
     def set_gameover(self):
         self._gameover = True
@@ -373,7 +378,7 @@ class PommeViewer(Viewer):
         return sprites
 
     def render_board(self, board, x_offset, y_offset, size, top=0):
-        def draw_bomb_life(x, y, blast_strength, color=constants.BOMB_LIFE_COLOR, opacity=255):
+        def draw_bomb_life(x, y, blast_strength, color=constants.BOMB_LIFE_COLOR, opacity=255, group=LAYER_TOP):
             strength = pyglet.text.Label(
                 str(blast_strength),
                 font_name='Arial',
@@ -381,7 +386,7 @@ class PommeViewer(Viewer):
                 x=x + 17,
                 y=y + 12,
                 batch=self._batch,
-                group=LAYER_TOP)
+                group=group)
             strength.color = color
             strength.opacity = opacity
             return strength
@@ -392,6 +397,7 @@ class PommeViewer(Viewer):
         mov_dirs = []
         bomb_positions = [bomb.position for bomb in self._bombs]
         overlay_bombs = []
+        collapse_alerts = []
 
         for row in range(self._board_size):
             for col in range(self._board_size):
@@ -465,14 +471,28 @@ class PommeViewer(Viewer):
                 else:
                     tile = self._resource_manager.tile_from_state_value(tile_state)
 
-
                 tile.width = size
                 tile.height = size
                 sprite = pyglet.sprite.Sprite(
                     tile, x, y, batch=self._batch, group=LAYER_FOREGROUND)
                 sprites.append(sprite)
 
-        return sprites, blast_strength, overlay_bombs
+                # draw collapse alert if the tile is not rigid and not fog.
+                if tile_state != constants.Item.Rigid.value and tile_state != constants.Item.Fog.value:
+                    if self._collapse_alert_map is not None:
+                        alert = self._collapse_alert_map[row, col]
+                        if alert > 0:
+                            life = draw_bomb_life(x, y, int(alert), color=(255, 100, 100, 200), group=LAYER_TOPPER)
+                            overlay = self._resource_manager.tile_from_state_value(constants.Item.Rigid.value)
+                            overlay.width = size
+                            overlay.height = size
+                            overlay_sprite = pyglet.sprite.Sprite(
+                                overlay, x, y, batch=self._batch, group=LAYER_TOPPER)
+                            overlay_sprite.opacity = constants.OVERLAY_OPACITY - 60
+                            collapse_alerts.append(overlay_sprite)
+
+
+        return sprites, blast_strength, overlay_bombs, collapse_alerts
 
     def render_selected_action(self, agent_id, size):
         assert self._selected_action is not None

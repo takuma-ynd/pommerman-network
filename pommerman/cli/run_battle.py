@@ -21,13 +21,9 @@ import time
 
 import argparse
 import numpy as np
-import requests
-import json
 
 from .. import helpers
 from .. import make
-from .. import constants
-from .. import configs
 from pommerman import utility
 
 
@@ -47,20 +43,6 @@ def run(args, num_times=1, seed=None):
     ]
 
     env = make(config, agents, game_state_file, render_mode=render_mode)
-    env._is_partially_observable = False  # NOTE: keep it False even if agents' obs are partial (this is to set the visualization right)
-
-    def send_json(jsonified_state, request_url, timeout=3.0):
-        try:
-            req = requests.post(
-                request_url,
-                # timeout=0.15,
-                timeout=timeout,
-                json=jsonified_state
-            )
-        except requests.exceptions.Timeout as e:
-            print('send_jsonified_state Timeout...')
-            print('Make sure that message server is running.')
-            raise
 
     def _run(record_pngs_dir=None, record_json_dir=None):
         '''Runs a game'''
@@ -73,24 +55,6 @@ def run(args, num_times=1, seed=None):
         obs = env.reset()
         done = False
 
-        # send environment information to Message server
-        url = 'http://localhost:{}/envinfo'.format(args.messaging_port)
-        print("sending envinfo to {}".format(url))
-        envinfo = env.spec._kwargs
-        for key, value in envinfo.items():
-            envinfo[key] = json.dumps(value, cls=utility.PommermanJSONEncoder)
-        send_json(envinfo, url)
-
-        # send the initial observations to human-remote-control agents
-        env.notify_obs(obs)
-
-        # send jsonified state to Messaging server
-        url = 'http://localhost:{}/initial_obs'.format(args.messaging_port)
-        print("sending jsonified state to {}".format(url))
-        jsonified_state = env.get_json_info()
-        send_json(jsonified_state, url)
-
-
         while not done:
             if args.render:
                 env.render(
@@ -100,19 +64,8 @@ def run(args, num_times=1, seed=None):
             if args.render is False and record_json_dir:
                 env.save_json(record_json_dir)
                 time.sleep(1.0 / env._render_fps)
-
-            # get actions from all agents
             actions = env.act(obs)
             obs, reward, done, info = env.step(actions)
-
-            # send jsonified state to Messaging server
-            url = 'http://localhost:{}/step'.format(args.messaging_port)
-            print("sending jsonified state to {}".format(url))
-            jsonified_state = env.get_json_info()
-            send_json(jsonified_state, url)
-
-        # send the final observations to human-remote-control agents
-        env.notify_obs(obs)
 
         print("Final Result: ", info)
         if args.render:
@@ -215,10 +168,6 @@ def main():
         '--do_sleep',
         default=True,
         help="Whether we sleep after each rendering.")
-    parser.add_argument(
-        '--messaging_port',
-        default=8000,
-        help="port number to communicate with messaging server: send game state for each step.")
     args = parser.parse_args()
     run(args)
 

@@ -563,6 +563,7 @@ class ForwardModel(object):
             agent_obs['game_type'] = game_type.value
             agent_obs['game_env'] = game_env
 
+            # get attributes from agent object
             for attr in attrs:
                 assert hasattr(agent, attr)
                 agent_obs[attr] = getattr(agent, attr)
