@@ -16,6 +16,7 @@ The collapsing works in the following manner:
    bombs (which don't go off), and agents in those squares.
 """
 import time
+import json
 from .. import constants
 from .. import utility
 from .. import graphics
@@ -116,7 +117,7 @@ class Pomme(v0.Pomme):
 
     def get_json_info(self):
         ret = super().get_json_info()
-        ret['collapses'] = json.dumps(self.collapses, cls=json_encoder)
+        ret['collapses'] = json.dumps(self.collapses, cls=utility.PommermanJSONEncoder)
         return ret
 
     def set_json_info(self):
@@ -155,7 +156,7 @@ class Pomme(v0.Pomme):
             self._game_type, self._env)
         for obs in self.observations:
             obs['step_count'] = self._step_count
-            # obs['collapse_alert_map'] = self._collapse_alert_map  # add collapse alert
+            obs['collapse_alert_map'] = self._collapse_alert_map  # add collapse alert
             obs['collapse_ring'] = self._collapse_ring  # add collapse alert
             obs['collapse_time'] = self._collapse_time  # add collapse alert
         return self.observations
