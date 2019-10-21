@@ -138,10 +138,10 @@ class Pomme(gym.Env):
                   if agent.agent_id != self.training_agent]
         return self.model.act(agents, obs, self.action_space)
 
-    def notify_obs(self, obs, visualize_whole=False):
+    def notify_obs(self, obs):
         for agent in self._agents:
             if hasattr(agent, 'notify_obs'):
-                agent.notify_obs(obs[agent.agent_id], visualize_whole=visualize_whole)
+                agent.notify_obs(obs[agent.agent_id])
 
     def get_observations(self):
         self.observations = self.model.get_observations(
