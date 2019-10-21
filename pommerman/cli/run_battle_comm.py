@@ -47,7 +47,6 @@ def run(args, num_times=1, seed=None):
     ]
 
     env = make(config, agents, game_state_file, render_mode=render_mode)
-    env._is_partially_observable = False  # NOTE: keep it False even if agents' obs are partial (this is to set the visualization right)
 
     def send_json(jsonified_state, request_url, timeout=3.0):
         try:
@@ -112,7 +111,9 @@ def run(args, num_times=1, seed=None):
             send_json(jsonified_state, url)
 
         # send the final observations to human-remote-control agents
-        env.notify_obs(obs)
+        env._is_partially_observable = False  # temporary make it fully observable
+        final_obs = env.get_observations()
+        env.notify_obs(final_obs)
 
         print("Final Result: ", info)
         if args.render:

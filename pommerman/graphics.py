@@ -305,11 +305,7 @@ class PommeViewer(Viewer):
         self.window.flip()
 
     def render_main_board(self, agent_id=None):
-        if self._is_partially_observable:
-            assert agent_id is not None
-            board = self.agent_view(self._agents[agent_id])
-        else:
-            board = self._board_state
+        board = self._board_state
         size = self._tile_size
         x_offset = constants.BORDER_SIZE
         y_offset = constants.BORDER_SIZE
