@@ -47,11 +47,12 @@ class DockerAgent(BaseAgent):
         # Start the docker agent if it is on this computer. Otherwise, it's far
         # away and we need to tell that server to start it.
         if 'localhost' in server:
-            container_thread = threading.Thread(
-                target=self._run_container, daemon=True)
-            container_thread.start()
-            print("Waiting for docker agent at {}:{}...".format(server, port))
-            self._wait_for_docker()
+            if not self._check_if_container_is_running():
+                container_thread = threading.Thread(
+                    target=self._run_container, daemon=True)
+                container_thread.start()
+                print("Waiting for docker agent at {}:{}...".format(server, port))
+                self._wait_for_docker()
         else:
             request_url = "{}:8000/run_container".format(server)
             request_json = {
@@ -74,6 +75,22 @@ class DockerAgent(BaseAgent):
             environment=self._env_vars)
         for line in self._container.logs(stream=True):
             print(line.decode("utf-8").strip())
+
+    def _check_if_container_is_running(self):
+        try:
+            request_url = '%s:%s/ping' % (self._server, self._port)
+            req = requests.get(request_url)
+            return True
+        except requests.exceptions.ConnectionError as e:
+            print("ConnectionError: ", e)
+            return False
+        except requests.exceptions.HTTPError as e:
+            print("HTTPError: ", e)
+            return False
+        except docker.errors.APIError as e:
+            print("This is a Docker error. Please fix: ", e)
+            raise
+
 
     def _wait_for_docker(self):
         """Wait for network service to appear. A timeout of 0 waits forever."""
@@ -169,9 +186,10 @@ class DockerAgent(BaseAgent):
         except requests.exceptions.Timeout as e:
             print('Timeout in shutdown()!')
 
-        print("Stopping container..")
-        if self._container:
-            try:
-                return self._container.remove(force=True)
-            except docker.errors.NotFound as e:
-                return True
+        # Persist containers
+        # print("Stopping container..")
+        # if self._container:
+        #     try:
+        #         return self._container.remove(force=True)
+        #     except docker.errors.NotFound as e:
+        #         return True
