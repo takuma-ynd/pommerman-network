@@ -8,7 +8,6 @@ from .player_agent_blocking import PlayerAgentBlocking
 from .random_agent import RandomAgent
 from .simple_agent import SimpleAgent
 from .static_agent import StaticAgent
-from .static_agent_test import StaticAgentTest
 from .runaway_agent import RunawayAgent
 from .tensorforce_agent import TensorForceAgent
 from .multiplayer_over_net_agent import MultiPlayerAgent
