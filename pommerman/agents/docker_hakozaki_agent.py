@@ -52,7 +52,6 @@ class DockerHakozakiAgent(DockerAgent):
             ring = obs['collapse_ring']
             time = obs['collapse_time']
             _collapse_alert_by_bombs(obs, ring, time)  # replace outer ring with bombs
-        print(obs)
 
         obs_serialized = json.dumps(obs, cls=utility.PommermanJSONEncoder)
         request_url = "http://localhost:{}/action".format(self._port)
