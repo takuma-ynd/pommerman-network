@@ -58,6 +58,7 @@ class Viewer(object):
         self._yourturn = False
         self._collapse_alert_map = None
         self._gameover = False
+        self._message = ''
         self._agent_view_size = None
         self._is_partially_observable = False
         self.isopen = False
@@ -92,6 +93,9 @@ class Viewer(object):
 
     def set_gameover(self):
         self._gameover = True
+
+    def set_message(self, message):
+        self._message = message
 
     def close(self):
         self.window.close()
@@ -291,14 +295,21 @@ class PommeViewer(Viewer):
         abilities = self.render_abilities(agent_id=agent_id, size=self._tile_size)
         if self._selected_action is not None:
             action = self.render_selected_action(agent_id=agent_id, size=self._tile_size)
+
+        # TODO: fix this!
+        # NOTE: This is very tricky!
+        # by overwriting the variable: waiting, render_waiting will be overwritten by render_message!
         if self._waiting:
             waiting = self.render_waiting()
 
-        if self._yourturn:
-            waiting = self.render_yourturn()
+        # if self._yourturn:
+        #     waiting = self.render_yourturn()
 
-        if self._gameover:
-            waiting = self.render_gameover()
+        # if self._gameover:
+        #     waiting = self.render_gameover()
+
+        if self._message != '':
+            waiting = self.render_message(self._message)
         # agents_board = self.render_agents_board()
 
         self._batch.draw()
@@ -565,24 +576,19 @@ class PommeViewer(Viewer):
         waiting_text.opacity = 200
         return waiting_shade, waiting_text
 
-    def render_yourturn(self):
-        message = "It's your turn..."
-        x = constants.BORDER_SIZE + self._tile_size * 2
-        y = constants.BORDER_SIZE + self._tile_size * 6
-        self.render_message(message, x, y)
-
-    def render_message(self, message, x, y, font_size=14, color=constants.TILE_COLOR, opacity=255):
-        message_obj = pyglet.text.Label(
+    def render_message(self, message):
+        text = pyglet.text.Label(
             message,
             font_name='Cousine-Regular',
-            font_size=14,
-            x=x,
-            y=y,
+            font_size=30,
+            x=constants.BORDER_SIZE + self._tile_size * 2,
+            # y=self._board_size * self._tile_size // 2,
+            y=constants.BORDER_SIZE + self._tile_size * 6,
             batch=self._batch,
             group=LAYER_TOP)
-        message_obj.color = color
-        message_obj.opacity = opacity
-        return waiting_shade, waiting_text
+        text.color = constants.TILE_COLOR
+        text.opacity = 200
+        return text
 
     def render_gameover(self):
         message = 'Game Over'
