@@ -108,7 +108,7 @@ def run(args, num_times=1, seed=None):
             url = 'http://localhost:{}/step'.format(args.messaging_port)
             print("sending jsonified state to {}".format(url))
             jsonified_state = env.get_json_info()
-            # jsonified_state['done'] = json.dumps(done, cls=utility.PommermanJSONEncoder)  # add done flag
+            jsonified_state['done'] = json.dumps(done, cls=utility.PommermanJSONEncoder)  # add done flag
             send_json(jsonified_state, url)
 
         # send the final observations to human-remote-control agents
