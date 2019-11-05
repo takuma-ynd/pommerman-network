@@ -34,9 +34,17 @@ class Pomme(v0.Pomme):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         first_collapse = kwargs.get('first_collapse')
-        self.collapses = list(
+        # collapses is [50, range(fist, max, int((max-first)/3))]
+        # ex: first = 100, max = 400 --> [50, 100, 200, 300]
+        if first_collapse <= 50:
+            first_collapse = 100
+        self.collapses = [50] + list(
             range(first_collapse, self._max_steps,
-                  int((self._max_steps - first_collapse) / 4)))
+                  int((self._max_steps - first_collapse) / 3)))
+
+        # self.collapses = list(
+        #     range(first_collapse, self._max_steps,
+        #           int((self._max_steps - first_collapse) / 4)))
         self._collapse_alert_map = np.zeros((self._board_size, self._board_size))
         self._collapse_ring = -1
         self._collapse_time = -1
