@@ -562,19 +562,31 @@ class PommeViewer(Viewer):
         waiting_shade.color = (0,0,0)  # black
         waiting_shade.opacity = 150
 
-        message = 'Waiting for other players...'
-        waiting_text = pyglet.text.Label(
-            message,
+        message1 = 'Waiting for the other player...'
+        message2 = "(Don't worry if the cursor becomes busy mark, it's working.)"
+        waiting_text1 = pyglet.text.Label(
+            message1,
             font_name='Cousine-Regular',
-            font_size=14,
-            x=constants.BORDER_SIZE,
-            # y=self._board_size * self._tile_size // 2,
-            y=self._tile_size,
+            font_size=26,
+            x=constants.BORDER_SIZE + self._tile_size * 1,
+            y=self._board_size * self._tile_size // 2,
+            # y=self._tile_size,
             batch=self._batch,
             group=LAYER_TOP)
-        waiting_text.color = constants.TILE_COLOR
-        waiting_text.opacity = 200
-        return waiting_shade, waiting_text
+        waiting_text2 = pyglet.text.Label(
+            message2,
+            font_name='Cousine-Regular',
+            font_size=12,
+            x=constants.BORDER_SIZE + self._tile_size * 1,
+            y=self._board_size * self._tile_size // 2 - self._tile_size // 2,
+            # y=self._tile_size,
+            batch=self._batch,
+            group=LAYER_TOP)
+        waiting_text1.color = constants.TILE_COLOR
+        waiting_text2.color = constants.TILE_COLOR
+        waiting_text1.opacity = 200
+        waiting_text2.opacity = 200
+        return waiting_shade, waiting_text1, waiting_text2
 
     def render_message(self, message):
         text = pyglet.text.Label(
