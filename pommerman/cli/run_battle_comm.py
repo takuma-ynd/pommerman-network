@@ -29,6 +29,7 @@ from .. import make
 from .. import constants
 from .. import configs
 from pommerman import utility
+from copy import deepcopy
 
 
 def run(args, num_times=1, seed=None):
@@ -111,7 +112,9 @@ def run(args, num_times=1, seed=None):
             jsonified_state['done'] = json.dumps(done, cls=utility.PommermanJSONEncoder)  # add done flag
             send_json(jsonified_state, url)
 
-        send_json(json.dumps({"info": str(info)}, cls=utility.PommermanJSONEncoder), 'http://localhost:{}/final_info'.format(args.messaging_port))
+        info_ = deepcopy(info)
+        info_['result'] = str(info_['result'])  # needs to stringify Result class
+        send_json(json.dumps(info_, cls=utility.PommermanJSONEncoder), 'http://localhost:{}/final_info'.format(args.messaging_port))
         # send the final observations to human-remote-control agents
         env._is_partially_observable = False  # temporary make it fully observable
         final_obs = env.get_observations()
