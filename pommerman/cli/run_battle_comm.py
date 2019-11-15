@@ -111,6 +111,7 @@ def run(args, num_times=1, seed=None):
             jsonified_state['done'] = json.dumps(done, cls=utility.PommermanJSONEncoder)  # add done flag
             send_json(jsonified_state, url)
 
+        send_json(json.dumps({"info": str(info)}, cls=utility.PommermanJSONEncoder), 'http://localhost:{}/final_info'.format(args.messaging_port))
         # send the final observations to human-remote-control agents
         env._is_partially_observable = False  # temporary make it fully observable
         final_obs = env.get_observations()
