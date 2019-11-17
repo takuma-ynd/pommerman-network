@@ -59,6 +59,7 @@ class Viewer(object):
         self._collapse_alert_map = None
         self._gameover = False
         self._message = ''
+        self._html_labels = []
         self._agent_view_size = None
         self._is_partially_observable = False
         self.isopen = False
@@ -96,6 +97,9 @@ class Viewer(object):
 
     def set_message(self, message):
         self._message = message
+
+    def set_html_labels(self, html_labels):
+        self._html_labels = html_labels
 
     def close(self):
         self.window.close()
@@ -308,8 +312,14 @@ class PommeViewer(Viewer):
         # if self._gameover:
         #     waiting = self.render_gameover()
 
+        # HACK: Only one of message or html_labels can be drawn.
         if self._message != '':
             waiting = self.render_message(self._message)
+        else:
+            self.render_html(self._html_labels)
+
+        # render html text
+
         # agents_board = self.render_agents_board()
 
         self._batch.draw()
@@ -602,6 +612,21 @@ class PommeViewer(Viewer):
         text.opacity = 200
         return text
 
+    def render_html(self, html_labels):
+        created_labels = []
+        for i, html_label in enumerate(html_labels):
+            label = pyglet.text.HTMLLabel(html_label,
+                                        x=self.window.width // 2,
+                                        y=self.window.height // 2 - i*26,
+                                        anchor_x='center',
+                                        anchor_y='center',
+                                        batch=self._batch,
+                                        group=LAYER_TOP)
+            label.color = constants.TILE_COLOR
+            created_labels.append(label)
+        return created_labels
+
+
     def render_gameover(self):
         message = 'Game Over'
         waiting_text = pyglet.text.Label(
@@ -659,7 +684,7 @@ class PommeViewer(Viewer):
         dead.width = image_size
         dead.height = image_size
         sprites = []
-        
+
         if self._game_type is constants.GameType.FFA or self._game_type is constants.GameType.OneVsOne:
             agents = self._agents
         else:
@@ -668,10 +693,10 @@ class PommeViewer(Viewer):
         for index, agent in enumerate(agents):
             # weird math to make sure the alignment
             # is correct. 'image_size + spacing' is an offset
-            # that includes padding (spacing) for each image. 
+            # that includes padding (spacing) for each image.
             # '4 - index' is used to space each agent out based
             # on where they are in the array based off of their
-            # index. 
+            # index.
             x = self.board_right() - (len(agents) - index) * (
                 image_size + spacing)
             y = board_top
