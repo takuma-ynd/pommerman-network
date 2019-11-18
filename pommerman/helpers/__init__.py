@@ -32,6 +32,7 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
         agent_instance = agents.RandomAgent()
     elif agent_type == "docker":
         port = agent_id + constants.AGENT_BASE_PORT
+        image, port = agent_control.split(":")
         if not USE_GAME_SERVERS:
             server = 'http://localhost'
         else:
@@ -40,14 +41,16 @@ def make_agent_from_string(agent_string, agent_id, docker_env_dict=None):
         agent_instance = agents.DockerAgent(
             agent_control, port=port, server=server, env_vars=docker_env_dict)
     elif agent_type == "docker_hakozaki":
-        port = agent_id + constants.AGENT_BASE_PORT
-        if not USE_GAME_SERVERS:
-            server = 'http://localhost'
+        if ":" in agent_control:
+            image, port = agent_control.split(":")
         else:
-            server = GAME_SERVERS[agent_id]
+            image = agent_control
+            port = agent_id + constants.AGENT_BASE_PORT
+
+        server = 'http://localhost'
         assert port is not None
         agent_instance = agents.DockerHakozakiAgent(
-            agent_control, port=port, server=server, env_vars=docker_env_dict)
+            image, port=port, server=server, env_vars=docker_env_dict)
     elif agent_type == "multiplayers":
         host, port = agent_control.split(":")
         if not USE_GAME_SERVERS:
