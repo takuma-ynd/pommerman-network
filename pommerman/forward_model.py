@@ -578,6 +578,7 @@ class ForwardModel(object):
         if step_count >= max_steps:
             return True
         elif game_type == constants.GameType.FFA or game_type == constants.GameType.OneVsOne:
+            # if a training agent dies, the game terminates on the spot.
             if training_agent is not None and training_agent not in alive_ids:
                 return True
             return len(alive) <= 1

@@ -34,8 +34,6 @@ class AbilityTracker:
 
     def diff(self, another_ability):
         ret = []
-        print('current', self.abilities)
-        print('prev', another_ability.abilities)
         assert len(self.abilities) == len(another_ability)
         for i in range(len(self.abilities)):
             assert len(self.abilities[i]) == len(another_ability[i])
@@ -45,7 +43,6 @@ class AbilityTracker:
             ret.append(_dict)
 
         # ret[1]['ammo'] = self.abilities[1]['ammo'] - another_ability[1]['ammo']
-        print('ret', ret)
         return ret
 
     def __getitem__(self, idx):
@@ -84,6 +81,7 @@ class Pomme(v0.Pomme):
         self._collapse_ring = -1
         self._collapse_time = -1
         self._previous_ability = None
+        self._prev_is_alive = [True for _ in range(4)]
 
     def _collapse_board(self, ring):
         """Collapses the board at a certain ring radius.
@@ -206,26 +204,53 @@ class Pomme(v0.Pomme):
         return self.observations
 
     def _get_rewards(self):
-        cur_reward = super()._get_rewards()
+        '''when ability of an agent increases, it gets reward'''
+
+        # NOTE: we don't use the normal reward anymore
+        # reward = super()._get_rewards()
+        reward = [0 for _ in self._agents]
+
+        # reward for increase of abilities
         if not self._previous_ability:
             self._previous_ability = AbilityTracker(self._agents)
         self._cur_ability = AbilityTracker(self._agents)
 
         diff = self._cur_ability.diff(self._previous_ability)
-        print(self._cur_ability.abilities[1])
-        print(self._previous_ability.abilities[1])
-        print(diff[1])
         # NOTE: keeping track of ammo is nonsense, because it changes everytime an agents put a bomb.
         for i in range(len(self._agents)):
             if diff[i]['ammo_capacity'] > 0:
-                cur_reward[i] += 0.1
+                reward[i] += 0.1
             if diff[i]['blast_strength'] > 0:
-                cur_reward[i] += 0.1
+                reward[i] += 0.1
             if diff[i]['can_kick'] > 0:
-                cur_reward[i] += 0.1
-
+                reward[i] += 0.1
         self._previous_ability = self._cur_ability
-        return cur_reward
+
+        assert self._game_type == constants.GameType.Team
+        self._cur_is_alive = [agent.is_alive for agent in self._agents]
+        who_got_killed = [bool(prev - cur) for prev, cur in zip(self._prev_is_alive, self._cur_is_alive)]
+        kill_reward = [0 for _ in self._agents]
+
+        for i, killed in enumerate(who_got_killed):
+            # A red team player is killed
+            if killed and i % 2 == 0:
+                for j, agent in enumerate(self._agents):
+                    kill_reward[j] += -1 if j % 2 == 0 else 1
+                kill_reward[i] += -1  # penalty
+
+            # A blue team player is killed
+            if killed and i % 2 == 1:
+                for j, agent in enumerate(self._agents):
+                    kill_reward[j] += -1 if j % 2 == 1 else 1
+                kill_reward[i] += -1  # penalty
+
+        self._prev_is_alive = self._cur_is_alive
+
+
+        for i in range(len(reward)):
+            reward[i] = reward[i] + kill_reward[i]
+
+        return reward
 
     # Basically just copied from v0.py
     # But visualize collapse_alert_map in addition
@@ -293,5 +318,3 @@ class Pomme(v0.Pomme):
 
         if do_sleep:
             time.sleep(1.0 / self._render_fps)
-
-
