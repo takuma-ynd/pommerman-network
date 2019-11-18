@@ -66,6 +66,7 @@ def run(args, num_times=1, seed=None):
                 time.sleep(1.0 / env._render_fps)
             actions = env.act(obs)
             obs, reward, done, info = env.step(actions)
+            print('reward:', reward)
 
         print("Final Result: ", info)
         if args.render:

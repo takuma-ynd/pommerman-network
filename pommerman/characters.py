@@ -85,6 +85,7 @@ class Bomber(object):
 
     def pick_up(self, item, max_blast_strength):
         if item == constants.Item.ExtraBomb:
+            self.ammo_capacity += 1
             self.incr_ammo()
         elif item == constants.Item.IncrRange:
             self.blast_strength = min(self.blast_strength + 1,
