@@ -254,6 +254,19 @@ class Pomme(v0.Pomme):
 
     # Basically just copied from v0.py
     # But visualize collapse_alert_map in addition
+
+    def _get_done(self):
+        done = self.model.get_done(self._agents, self._step_count,
+                                   self._max_steps, self._game_type,
+                                   self.training_agent)
+
+        # if a training agent dies, the game terminates on the spot.
+        alive = [agent for agent in self._agents if agent.is_alive]
+        alive_ids = sorted([agent.agent_id for agent in alive])
+        if self.training_agent is not None and self.training_agent not in alive_ids:
+            done = True
+        return done
+
     def render(self,
                mode=None,
                close=False,
