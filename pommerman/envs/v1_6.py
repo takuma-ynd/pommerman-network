@@ -211,6 +211,7 @@ class Pomme(v0.Pomme):
         reward = [0 for _ in self._agents]
 
         # reward for increase of abilities
+        # if an agent get an item that increases its ability, reward 0.1 is given
         if not self._previous_ability:
             self._previous_ability = AbilityTracker(self._agents)
         self._cur_ability = AbilityTracker(self._agents)
@@ -226,6 +227,11 @@ class Pomme(v0.Pomme):
                 reward[i] += 0.1
         self._previous_ability = self._cur_ability
 
+
+        # reward for killing/dying
+        # if an agent0 is killed:
+        #  agent0 (team0) gets reward -2, agent2 (team0) gets reward -1
+        #  agent1 (team1) gets reward +1, agent3 (team1) gets reward +1
         assert self._game_type == constants.GameType.Team
         self._cur_is_alive = [agent.is_alive for agent in self._agents]
         who_got_killed = [bool(prev - cur) for prev, cur in zip(self._prev_is_alive, self._cur_is_alive)]
