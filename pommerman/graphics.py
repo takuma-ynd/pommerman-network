@@ -303,8 +303,8 @@ class PommeViewer(Viewer):
         # TODO: fix this!
         # NOTE: This is very tricky!
         # by overwriting the variable: waiting, render_waiting will be overwritten by render_message!
-        if self._waiting:
-            waiting = self.render_waiting()
+        # if self._waiting:
+        #     waiting = self.render_waiting()
 
         # if self._yourturn:
         #     waiting = self.render_yourturn()
@@ -313,8 +313,11 @@ class PommeViewer(Viewer):
         #     waiting = self.render_gameover()
 
         # HACK: Only one of message or html_labels can be drawn.
-        if self._message != '':
-            waiting = self.render_message(self._message)
+        # if self._message != '':
+        #     waiting = self.render_message(self._message)
+        # else:
+        if self._waiting:
+            waiting = self.render_waiting()
         else:
             self.render_html(self._html_labels)
 
@@ -613,6 +616,8 @@ class PommeViewer(Viewer):
         return text
 
     def render_html(self, html_labels):
+        if type(html_labels) == str:
+            html_labels = [html_labels]
         created_labels = []
         for i, html_label in enumerate(html_labels):
             label = pyglet.text.HTMLLabel(html_label,

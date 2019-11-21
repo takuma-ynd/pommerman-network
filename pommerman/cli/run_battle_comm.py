@@ -82,14 +82,13 @@ def run(args, num_times=1, seed=None):
         send_json(envinfo, url)
 
         # send the initial observations to human-remote-control agents
-        env.notify_obs(obs)
+        env.notify_obs(obs, waiting=True)
 
         # send jsonified state to Messaging server
         url = 'http://localhost:{}/initial_obs'.format(args.messaging_port)
         print("sending jsonified state to {}".format(url))
         jsonified_state = env.get_json_info()
         send_json(jsonified_state, url)
-
 
         while not done:
             if args.render:
@@ -102,6 +101,7 @@ def run(args, num_times=1, seed=None):
                 time.sleep(1.0 / env._render_fps)
 
             # get actions from all agents
+            env.notify_obs(obs, waiting=True)
             actions = env.act(obs)
             obs, reward, done, info = env.step(actions)
 
@@ -118,7 +118,7 @@ def run(args, num_times=1, seed=None):
         # send the final observations to human-remote-control agents
         env._is_partially_observable = False  # temporary make it fully observable
         final_obs = env.get_observations()
-        env.notify_obs(final_obs)
+        env.notify_obs(final_obs, waiting=False)
 
         print("Final Result: ", info)
         if args.render:

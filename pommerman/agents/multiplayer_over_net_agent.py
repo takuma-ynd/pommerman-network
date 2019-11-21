@@ -124,8 +124,10 @@ class MultiPlayerAgent(BaseAgent):
         except requests.exceptions.Timeout as e:
             print('Timeout in init_agent()!')
 
-    def notify_obs(self, obs):
+    def notify_obs(self, obs, waiting=False):
         obs_serialized = json.dumps(obs, cls=utility.PommermanJSONEncoder)
+        waiting_serialized = json.dumps(waiting, cls=utility.PommermanJSONEncoder)
+
         request_url = "http://localhost:{}/notify_obs".format(self._port)
         try:
             req = requests.post(
@@ -134,6 +136,8 @@ class MultiPlayerAgent(BaseAgent):
                 json={
                     "obs":
                     obs_serialized,
+                    "waiting":
+                    waiting_serialized
                 })
         except requests.exceptions.Timeout as e:
             print('Timeout!')
