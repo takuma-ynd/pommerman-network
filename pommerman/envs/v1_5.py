@@ -33,18 +33,24 @@ class Pomme(v0.Pomme):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        first_collapse = kwargs.get('first_collapse')
-        # collapses is [50, range(fist, max, int((max-first)/3))]
-        # ex: first = 100, max = 400 --> [50, 100, 200, 300]
-        if first_collapse <= 50:
-            first_collapse = 100
-        self.collapses = [50] + list(
-            range(first_collapse, self._max_steps,
-                  int((self._max_steps - first_collapse) / 3)))
+        import ipdb; ipdb.set_trace()
+        self._disable_collapse = kwargs.get('disable_collapse', False)
+        if self._disable_collapse:
+            self.collapses = [-1]
+        else:
+            first_collapse = kwargs.get('first_collapse')
+            # collapses is [50, range(fist, max, int((max-first)/3))]
+            # ex: first = 100, max = 400 --> [50, 100, 200, 300]
+            if first_collapse <= 50:
+                first_collapse = 100
+            self.collapses = [50] + list(
+                range(first_collapse, self._max_steps,
+                    int((self._max_steps - first_collapse) / 3)))
 
-        # self.collapses = list(
-        #     range(first_collapse, self._max_steps,
-        #           int((self._max_steps - first_collapse) / 4)))
+            # self.collapses = list(
+            #     range(first_collapse, self._max_steps,
+            #           int((self._max_steps - first_collapse) / 4)))
+
         self._collapse_alert_map = np.zeros((self._board_size, self._board_size))
         self._collapse_ring = -1
         self._collapse_time = -1
@@ -134,6 +140,7 @@ class Pomme(v0.Pomme):
 
     def step(self, actions):
         obs, reward, done, info = super().step(actions)
+
         self._collapse_ring = -1
         self._collapse_time = -1
 
