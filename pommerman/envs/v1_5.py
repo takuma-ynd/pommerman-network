@@ -33,7 +33,6 @@ class Pomme(v0.Pomme):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        import ipdb; ipdb.set_trace()
         self._disable_collapse = kwargs.get('disable_collapse', False)
         if self._disable_collapse:
             self.collapses = [-1]
