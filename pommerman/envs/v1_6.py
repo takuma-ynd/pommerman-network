@@ -69,6 +69,12 @@ class Pomme(v1_5.Pomme):
         self._prev_is_alive = [True for _ in range(4)]
 
 
+    def reset(self):
+        observations = super().reset()
+        self._previous_ability = None
+        self._prev_is_alive = [True for _ in range(4)]
+        return observations
+
     def _get_rewards(self):
         '''when ability of an agent increases, it gets reward'''
 
