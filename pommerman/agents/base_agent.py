@@ -11,7 +11,9 @@ class BaseAgent:
 
     def __getattr__(self, attr):
         # HACK: to avoid infinite recursive copy error in deepcopy
-        if '_character' not in dir(self):
+        # if '_character' not in dir(self):  <-- This was significantly slower!!!
+        if not hasattr(self, '_character'):
+            print('called!')
             self._character = characters.Bomber
         return getattr(self._character, attr)
 
