@@ -10,6 +10,9 @@ class BaseAgent:
         self._character = character
 
     def __getattr__(self, attr):
+        # HACK: to avoid infinite recursive copy error in deepcopy
+        if '_character' not in dir(self):
+            self._character = characters.Bomber
         return getattr(self._character, attr)
 
     def act(self, obs, action_space):
