@@ -1,6 +1,7 @@
 '''This is the base abstraction for agents in pommerman.
 All agents should inherent from this class'''
 from .. import characters
+from copy import deepcopy
 
 
 class BaseAgent:
@@ -11,9 +12,9 @@ class BaseAgent:
 
     def __getattr__(self, attr):
         # HACK: to avoid infinite recursive copy error in deepcopy
+        # without this if sentence, deepcopy tries to find self._character that doesn't exist, and loops forever
         # if '_character' not in dir(self):  <-- This was significantly slower!!!
-        if not hasattr(self, '_character'):
-            print('called!')
+        if attr == '_character':
             self._character = characters.Bomber
         return getattr(self._character, attr)
 
