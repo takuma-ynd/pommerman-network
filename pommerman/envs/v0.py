@@ -136,7 +136,9 @@ class Pomme(gym.Env):
     def act(self, obs):
         agents = [agent for agent in self._agents \
                   if agent.agent_id != self.training_agent]
-        return self.model.act(agents, obs, self.action_space)
+        actions = self.model.act(agents, obs, self.action_space)
+        actions.insert(self.training_agent, -1)
+        return actions
 
     def notify_obs(self, obs):
         for agent in self._agents:
