@@ -208,7 +208,7 @@ def team_competition_bommbermanlike_v1_4_env():
         'num_rigid': 40 + 16,
         'num_wood': 36,
         'num_items': 20,
-        'max_steps': 100,  # ADDED to v16 !
+        'max_steps': 200,  # ADDED on top of v16 !
         'render_fps': constants.RENDER_FPS,
         'agent_view_size': 3,
         # 'is_partially_observable': True,
