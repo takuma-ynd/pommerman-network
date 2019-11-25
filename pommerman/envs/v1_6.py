@@ -124,9 +124,9 @@ class Pomme(v1_5.Pomme):
 
         self._prev_is_alive = self._cur_is_alive
 
-
+        kill_reward_coef = 0.25
         for i in range(len(reward)):
-            reward[i] = reward[i] + kill_reward[i]
+            reward[i] = reward[i] + kill_reward[i] * kill_reward_coef
 
         return reward
 
