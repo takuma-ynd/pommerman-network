@@ -82,22 +82,22 @@ class Pomme(v1_5.Pomme):
         # reward = super()._get_rewards()
         reward = [0 for _ in self._agents]
 
-        # reward for increase of abilities
-        # if an agent get an item that increases its ability, reward 0.1 is given
-        if not self._previous_ability:
-            self._previous_ability = AbilityTracker(self._agents)
-        self._cur_ability = AbilityTracker(self._agents)
+        # # reward for increase of abilities
+        # # if an agent get an item that increases its ability, reward 0.1 is given
+        # if not self._previous_ability:
+        #     self._previous_ability = AbilityTracker(self._agents)
+        # self._cur_ability = AbilityTracker(self._agents)
 
-        diff = self._cur_ability.diff(self._previous_ability)
-        # NOTE: keeping track of ammo is nonsense, because it changes everytime an agents put a bomb.
-        for i in range(len(self._agents)):
-            if diff[i]['ammo_capacity'] > 0:
-                reward[i] += 0.1
-            if diff[i]['blast_strength'] > 0:
-                reward[i] += 0.1
-            if diff[i]['can_kick'] > 0:
-                reward[i] += 0.1
-        self._previous_ability = self._cur_ability
+        # diff = self._cur_ability.diff(self._previous_ability)
+        # # NOTE: keeping track of ammo is nonsense, because it changes everytime an agents put a bomb.
+        # for i in range(len(self._agents)):
+        #     if diff[i]['ammo_capacity'] > 0:
+        #         reward[i] += 0.1
+        #     if diff[i]['blast_strength'] > 0:
+        #         reward[i] += 0.1
+        #     if diff[i]['can_kick'] > 0:
+        #         reward[i] += 0.1
+        # self._previous_ability = self._cur_ability
 
 
         # reward for killing/dying
