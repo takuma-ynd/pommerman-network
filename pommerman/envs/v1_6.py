@@ -104,29 +104,29 @@ class Pomme(v1_5.Pomme):
         # if an agent0 is killed:
         #  agent0 (team0) gets reward -2, agent2 (team0) gets reward -1
         #  agent1 (team1) gets reward +1, agent3 (team1) gets reward +1
-        assert self._game_type == constants.GameType.Team
-        self._cur_is_alive = [agent.is_alive for agent in self._agents]
-        who_got_killed = [bool(prev - cur) for prev, cur in zip(self._prev_is_alive, self._cur_is_alive)]
-        kill_reward = [0 for _ in self._agents]
+        # assert self._game_type == constants.GameType.Team
+        # self._cur_is_alive = [agent.is_alive for agent in self._agents]
+        # who_got_killed = [bool(prev - cur) for prev, cur in zip(self._prev_is_alive, self._cur_is_alive)]
+        # kill_reward = [0 for _ in self._agents]
 
-        for i, killed in enumerate(who_got_killed):
-            # A red team player is killed
-            if killed and i % 2 == 0:
-                for j, agent in enumerate(self._agents):
-                    kill_reward[j] += -1 if j % 2 == 0 else 1
-                kill_reward[i] += -1  # penalty
+        # for i, killed in enumerate(who_got_killed):
+        #     # A red team player is killed
+        #     if killed and i % 2 == 0:
+        #         for j, agent in enumerate(self._agents):
+        #             kill_reward[j] += -1 if j % 2 == 0 else 1
+        #         kill_reward[i] += -1  # penalty
 
-            # A blue team player is killed
-            if killed and i % 2 == 1:
-                for j, agent in enumerate(self._agents):
-                    kill_reward[j] += -1 if j % 2 == 1 else 1
-                kill_reward[i] += -1  # penalty
+        #     # A blue team player is killed
+        #     if killed and i % 2 == 1:
+        #         for j, agent in enumerate(self._agents):
+        #             kill_reward[j] += -1 if j % 2 == 1 else 1
+        #         kill_reward[i] += -1  # penalty
 
-        self._prev_is_alive = self._cur_is_alive
+        # self._prev_is_alive = self._cur_is_alive
 
-        kill_reward_coef = 0.25
-        for i in range(len(reward)):
-            reward[i] = reward[i] + kill_reward[i] * kill_reward_coef
+        # kill_reward_coef = 0.25
+        # for i in range(len(reward)):
+        #     reward[i] = reward[i] + kill_reward[i] * kill_reward_coef
 
         return reward
 
