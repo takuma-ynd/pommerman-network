@@ -8,6 +8,7 @@ from .player_agent_blocking import PlayerAgentBlocking
 from .random_agent import RandomAgent
 from .simple_agent import SimpleAgent
 from .simple_nobomb_agent import SimpleNoBombAgent
+from .simple_seldombomb_agent import SimpleSeldomBombAgent
 from .static_agent import StaticAgent
 from .runaway_agent import RunawayAgent
 from .tensorforce_agent import TensorForceAgent
