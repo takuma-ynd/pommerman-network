@@ -6,6 +6,7 @@ from .http_agent import HttpAgent
 from .player_agent import PlayerAgent
 from .player_agent_blocking import PlayerAgentBlocking
 from .random_agent import RandomAgent
+from .random_nobomb_agent import RandomNoBombAgent
 from .simple_agent import SimpleAgent
 from .simple_nobomb_agent import SimpleNoBombAgent
 from .simple_seldombomb_agent import SimpleSeldomBombAgent
