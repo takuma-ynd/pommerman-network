@@ -77,61 +77,8 @@ class Pomme(v1_5.Pomme):
 
     def _get_rewards(self):
         '''when ability of an agent increases, it gets reward'''
-
-        # NOTE: we don't use the normal reward anymore
-        # reward = super()._get_rewards()
-        reward = [0 for _ in self._agents]
-
-        # # reward for increase of abilities
-        # # if an agent get an item that increases its ability, reward 0.1 is given
-        # if not self._previous_ability:
-        #     self._previous_ability = AbilityTracker(self._agents)
-        # self._cur_ability = AbilityTracker(self._agents)
-
-        # diff = self._cur_ability.diff(self._previous_ability)
-        # # NOTE: keeping track of ammo is nonsense, because it changes everytime an agents put a bomb.
-        # for i in range(len(self._agents)):
-        #     if diff[i]['ammo_capacity'] > 0:
-        #         reward[i] += 0.1
-        #     if diff[i]['blast_strength'] > 0:
-        #         reward[i] += 0.1
-        #     if diff[i]['can_kick'] > 0:
-        #         reward[i] += 0.1
-        # self._previous_ability = self._cur_ability
-
-
-        # reward for killing/dying
-        # if an agent0 is killed:
-        #  agent0 (team0) gets reward -2, agent2 (team0) gets reward -1
-        #  agent1 (team1) gets reward +1, agent3 (team1) gets reward +1
-        # assert self._game_type == constants.GameType.Team
-        # self._cur_is_alive = [agent.is_alive for agent in self._agents]
-        # who_got_killed = [bool(prev - cur) for prev, cur in zip(self._prev_is_alive, self._cur_is_alive)]
-        # kill_reward = [0 for _ in self._agents]
-
-        # for i, killed in enumerate(who_got_killed):
-        #     # A red team player is killed
-        #     if killed and i % 2 == 0:
-        #         for j, agent in enumerate(self._agents):
-        #             kill_reward[j] += -1 if j % 2 == 0 else 1
-        #         kill_reward[i] += -1  # penalty
-
-        #     # A blue team player is killed
-        #     if killed and i % 2 == 1:
-        #         for j, agent in enumerate(self._agents):
-        #             kill_reward[j] += -1 if j % 2 == 1 else 1
-        #         kill_reward[i] += -1  # penalty
-
-        # self._prev_is_alive = self._cur_is_alive
-
-        # kill_reward_coef = 0.25
-        # for i in range(len(reward)):
-        #     reward[i] = reward[i] + kill_reward[i] * kill_reward_coef
-
+        reward = super()._get_rewards()
         return reward
-
-    # Basically just copied from v0.py
-    # But visualize collapse_alert_map in addition
 
     def _get_done(self):
         done = self.model.get_done(self._agents, self._step_count,
