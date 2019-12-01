@@ -342,7 +342,7 @@ class SimpleAgent(BaseAgent):
 
         # Will we be stuck?
         x, y = my_position
-        for position in items.get(constants.Item.Passage):
+        for position in items.get(constants.Item.Passage, []):
             if dist[position] == np.inf:
                 continue
 
