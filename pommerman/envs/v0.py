@@ -36,6 +36,8 @@ class Pomme(gym.Env):
                  max_steps=1000,
                  is_partially_observable=False,
                  bomberman_like=False,
+                 two_vs_one=False,
+                 simple_two_vs_one=False,
                  env=None,
                  **kwargs):
         self._render_fps = render_fps
@@ -51,6 +53,8 @@ class Pomme(gym.Env):
         self._viewer = None
         self._is_partially_observable = is_partially_observable
         self._bomberman_like = bomberman_like
+        self._two_vs_one = two_vs_one
+        self._simple_two_vs_one = simple_two_vs_one
         self._env = env
 
         self.training_agent = None
@@ -128,7 +132,7 @@ class Pomme(gym.Env):
 
     def make_board(self):
         self._board = utility.make_board(self._board_size, self._num_rigid,
-                                         self._num_wood, len(self._agents), self._bomberman_like)
+                                         self._num_wood, len(self._agents), self._bomberman_like, self._two_vs_one, self._simple_two_vs_one, agent_view_size=self._agent_view_size)
 
     def make_items(self):
         self._items = utility.make_items(self._board, self._num_items)

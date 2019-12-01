@@ -650,6 +650,8 @@ class PommeViewer(Viewer):
         
         if self._game_type is constants.GameType.FFA or self._game_type is constants.GameType.OneVsOne:
             agents = self._agents
+        elif len(self._agents) == 3:
+            agents = [self._agents[i] for i in [0,2,1]]
         else:
             agents = [self._agents[i] for i in [0,2,1,3]]
 

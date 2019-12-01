@@ -221,6 +221,34 @@ def team_competition_bommbermanlike_v1_4_env():
     agent = characters.Bomber
     return locals()
 
+def team_competition_bommbermanlike_simple_two_vs_one_env():
+    """Start up a Team config with the competition settings."""
+    env = envs.v1_6.Pomme
+    game_type = constants.GameType.Team
+    env_entry_point = 'pommerman.envs.v1_6:Pomme'
+    env_id = 'PommeTeamCompetitionBombermanlike-v4'
+    env_kwargs = {
+        'game_type': game_type,
+        'board_size': constants.BOARD_SIZE,
+        # 'num_rigid': constants.NUM_RIGID,
+        'num_rigid': 40 + 16,
+        'num_wood': 10,
+        'num_items': 5,
+        'max_steps': 200,  # ADDED on top of v16 !
+        'render_fps': constants.RENDER_FPS,
+        'agent_view_size': 3,
+        # 'is_partially_observable': True,
+        'first_collapse': constants.FIRST_COLLAPSE,
+        'is_partially_observable': True,
+        'bomberman_like': True,
+        'env': env_entry_point,
+        'disable_collapse': True,  # ADDED to v16 !
+        'simple_two_vs_one': True, # ADDED!
+    }
+    agent = characters.Bomber
+    return locals()
+
+
 def team_competition_bommbermanlike_v1_6_env():
     """Start up a Team config with the competition settings."""
     env = envs.v1_6.Pomme
@@ -245,6 +273,35 @@ def team_competition_bommbermanlike_v1_6_env():
     }
     agent = characters.Bomber
     return locals()
+
+
+def team_competition_bommbermanlike_two_vs_one_env():
+    """Start up a Team config with the competition settings."""
+    env = envs.v1_6.Pomme
+    game_type = constants.GameType.Team
+    env_entry_point = 'pommerman.envs.v1_6:Pomme'
+    env_id = 'PommeTeamCompetitionBombermanlike-v3'
+    env_kwargs = {
+        'game_type': game_type,
+        'board_size': constants.BOARD_SIZE,
+        # 'num_rigid': constants.NUM_RIGID,
+        'num_rigid': 11 * 4 + 9 * 2 + 4 * 4 + 10,  # no idea what the last 10 corresponds to
+        'num_wood': 10,
+        'num_items': 6,
+        'max_steps': constants.MAX_STEPS,
+        'render_fps': constants.RENDER_FPS,
+        'agent_view_size': 3,
+        # 'is_partially_observable': True,
+        'first_collapse': constants.FIRST_COLLAPSE,
+        'is_partially_observable': True,
+        'bomberman_like': False,
+        'two_vs_one': True,
+        'env': env_entry_point,
+    }
+    agent = characters.Bomber
+    return locals()
+
+
 
 def team_competition_small_bommbermanlike_env():
     """Start up a Team config with the competition settings."""
