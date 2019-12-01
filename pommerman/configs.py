@@ -221,6 +221,32 @@ def team_competition_bommbermanlike_v1_4_env():
     agent = characters.Bomber
     return locals()
 
+def team_competition_bommbermanlike_v1_4_longer_env():
+    """Start up a Team config with the competition settings."""
+    env = envs.v1_6.Pomme
+    game_type = constants.GameType.Team
+    env_entry_point = 'pommerman.envs.v1_6:Pomme'
+    env_id = 'PommeTeamCompetitionBombermanlike-v14-longer'
+    env_kwargs = {
+        'game_type': game_type,
+        'board_size': constants.BOARD_SIZE,
+        # 'num_rigid': constants.NUM_RIGID,
+        'num_rigid': 40 + 16,
+        'num_wood': 36,
+        'num_items': 20,
+        'max_steps': 250,  # ADDED on top of v16 !
+        'render_fps': constants.RENDER_FPS,
+        'agent_view_size': 3,
+        # 'is_partially_observable': True,
+        'first_collapse': constants.FIRST_COLLAPSE,
+        'is_partially_observable': True,
+        'bomberman_like': True,
+        'env': env_entry_point,
+        'disable_collapse': True,  # ADDED to v16 !
+    }
+    agent = characters.Bomber
+    return locals()
+
 def team_competition_bommbermanlike_v1_6_env():
     """Start up a Team config with the competition settings."""
     env = envs.v1_6.Pomme
