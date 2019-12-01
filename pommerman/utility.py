@@ -241,7 +241,11 @@ def make_board(size, num_rigid=0, num_wood=0, num_agents=4, bomberman_like=False
                     secured_passages.append((posx, posy))
 
 
-        return [teammate_pos, enemy_pos, teammate2_pos], secured_passages, enemy_surrounding_blocks
+        if random.random() > 0.5:
+            agents = [teammate_pos, enemy_pos, teammate2_pos]
+        else:
+            agents = [teammate2_pos, enemy_pos, teammate_pos]
+        return agents, secured_passages, enemy_surrounding_blocks
 
     def make(size, num_rigid, num_wood, num_agents, two_vs_one=False, simple_two_vs_one=False):
         '''Constructs a game/board'''
