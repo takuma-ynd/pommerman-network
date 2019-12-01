@@ -226,7 +226,7 @@ def team_competition_bommbermanlike_v1_4_longer_env():
     env = envs.v1_6.Pomme
     game_type = constants.GameType.Team
     env_entry_point = 'pommerman.envs.v1_6:Pomme'
-    env_id = 'PommeTeamCompetitionBombermanlike-v14-longer'
+    env_id = 'PommeTeamCompetitionBombermanlike-longer-v14'
     env_kwargs = {
         'game_type': game_type,
         'board_size': constants.BOARD_SIZE,
